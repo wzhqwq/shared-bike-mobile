@@ -1,4 +1,6 @@
 import { Api } from "../services/api"
+import { User, UserModel } from "./user/user"
+import * as storage from "../utils/storage"
 
 let ReactotronDev
 if (__DEV__) {
@@ -26,6 +28,9 @@ export class Environment {
       await this.reactotron.setup()
     }
     await this.api.setup()
+    this.localUser = UserModel.create(await storage.load('user') ?? {})
+    this.jwt = await storage.load('jwt')
+    if (this.jwt) this.api.updateJwt(this.jwt)
   }
 
   /**
@@ -37,4 +42,8 @@ export class Environment {
    * Our api.
    */
   api: Api
+
+  localUser: User
+  
+  jwt: string
 }

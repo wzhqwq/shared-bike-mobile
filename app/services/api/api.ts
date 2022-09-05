@@ -1,7 +1,91 @@
 import { ApisauceInstance, create, ApiResponse } from "apisauce"
-import { getGeneralApiProblem } from "./api-problem"
+import global from "../../global"
+import { BikeBill, BikeSeries, Configuration, DestroyRecord, ExchangeRecord, Malfunction, MalfunctionRecord, OtherBill, ParkingPoint, RechargeRecord, RepairRecord, Section, SignUpRequest, Souvenir, SouvenirBill } from "../../models"
+import { navigate } from "../../navigators"
 import { ApiConfig, DEFAULT_API_CONFIG } from "./api-config"
-import * as Types from "./api.types"
+
+export type Paginator = {
+  last_id: number
+  size?: number
+}
+
+interface AllRoutes {
+  '/auth/sign_up': { nickname: string, password: string }
+  '/auth/sign_in': { nickname: string, password: string }
+  '/auth/register_as_customer': undefined
+  '/auth/request_to_be': SignUpRequest
+  '/auth/check_role': undefined
+  '/auth/me': undefined
+  '/auth/edit_profile': { nickname?: string, name?: string, phone?: string }
+  '/auth/edit_password': { password: string, old_password: string }
+  '/customer/bike/list': { longitude: string, latitude: string }
+  '/customer/bike/parking_point/list': { longitude: string, latitude: string }
+  '/customer/bike/find': { series_no: string }
+  '/customer/bike/unlock': { bike_id: number, encrypted: string }
+  '/customer/bike/update': { bike_id: number, encrypted: string }
+  '/customer/bike/report': MalfunctionRecord[]
+  '/customer/bike/record/list/ride': Paginator
+  '/customer/bike/record/list/malfunction': { ride_id: number }
+  '/customer/property/list/points': Paginator
+  '/customer/property/list/deposit': Paginator
+  '/customer/property/list/recharge': Paginator
+  '/customer/property/recharge': RechargeRecord
+  '/customer/souvenir/items/list': undefined
+  '/customer/souvenir/exchanged/list': Paginator
+  '/customer/souvenir/exchange': ExchangeRecord
+  '/maintainer/list_sections': undefined
+  '/maintainer/list_parking_points': { section_id: number }
+  '/maintainer/bike/list': { section_id: number }
+  '/maintainer/bike/list_to_move': { section_id: number }
+  '/maintainer/maintain/start': { bike_id: number }
+  '/maintainer/maintain/finish': { bike_id: number, p_longitude: string, p_latitude: string }
+  '/maintainer/malfunction/list': Paginator & { bike_id: number }
+  '/maintainer/malfunction/handle': RepairRecord
+  '/maintainer/repair/list': Paginator
+  '/maintainer/bike/register': { encrypted: string, series_id: number }
+  '/maintainer/bike/activate': { encrypted: string }
+  '/manager/property/separated/list/bike': Paginator
+  '/manager/property/separated/list/souvenir': Paginator
+  '/manager/property/separated/list/other': Paginator
+  '/manager/property/master/list': Paginator
+  '/manager/property/detail': { record_id: number, type: number }
+  '/manager/property/separated/add/bike': BikeBill
+  '/manager/property/separated/add/souvenir': SouvenirBill
+  '/manager/property/separated/add/other': OtherBill
+  '/manager/user/list/customer': Paginator
+  '/manager/user/list/manager': Paginator
+  '/manager/user/list/maintainer': Paginator
+  '/manager/user/find': { user_id: number }
+  '/manager/user/request/list': Paginator
+  '/manager/user/request/handle': { record_id: number, status: number }
+  '/manager/user/lift_the_ban': { customer_id: number }
+  '/manager/bike/statistics': undefined
+  '/manager/bike/list/danger': Paginator
+  '/manager/bike/list/all': Paginator
+  '/manager/bike/list/destroyed': Paginator
+  '/manager/bike/destroy': DestroyRecord
+  '/manager/bike/series/list': undefined
+  '/manager/bike/series/add': BikeSeries
+  '/manager/bike/series/modify': BikeSeries
+  '/manager/bike/series/remove': { series_id: number }
+  '/manager/bike/malfunction/list': undefined
+  '/manager/bike/malfunction/add': Malfunction
+  '/manager/bike/malfunction/modify': { malfunction_id: number, part_name: string }
+  '/manager/souvenir/list': undefined
+  '/manager/souvenir/add': Souvenir
+  '/manager/souvenir/exchanges/list': { customer_id: number }
+  '/manager/souvenir/exchanges/give': { record_id: number }
+  '/manager/section/list': undefined
+  '/manager/section/add': Section
+  '/manager/section/remove': { section_id: number }
+  '/manager/section/maintainer/grant': { section_id: number, maintainer_id: number }
+  '/manager/section/maintainer/revoke': { section_id: number, maintainer_id: number }
+  '/manager/parking_point/list': undefined
+  '/manager/parking_point/add': ParkingPoint
+  '/manager/parking_point/remove': { pp_id: number }
+  '/manager/config/list': undefined
+  '/manager/config/modify': Configuration[]
+}
 
 /**
  * Manages all requests to the API.
@@ -42,61 +126,52 @@ export class Api {
         Accept: "application/json",
       },
     })
+    this.apisauce.addMonitor(response => {
+      if (response.status === 401) {
+        navigate("login")
+        global.toast.show("请登录")
+        return
+      }
+      if (response.status !== 200) {
+        global.toast.show(response.data)
+        return
+      }
+      if (!response.data.status) {
+        global.toast.show(response.data.error)
+      }
+    })
+    this.apisauce.addResponseTransform(response => {
+      if (response.status !== 200) return
+      if (!response.data.status) {
+        response.ok = false
+        return
+      }
+      const convertor = (o: any) => {
+        if (o.time) o.time = new Date(o.time)
+        if (o.start_time) o.start_time = new Date(o.start_time)
+        if (o.end_time) o.end_time = new Date(o.end_time)
+      }
+      response.data = response.data.data
+      if (response.data instanceof Array) {
+        response.data.forEach(convertor)
+      }
+      else {
+        convertor(response.data)
+      }
+    })
   }
 
-  /**
-   * Gets a list of users.
-   */
-  async getUsers(): Promise<Types.GetUsersResult> {
-    // make the api call
-    const response: ApiResponse<any> = await this.apisauce.get(`/users`)
-
-    // the typical ways to die when calling an api
-    if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
-    }
-
-    const convertUser = (raw) => {
-      return {
-        id: raw.id,
-        name: raw.name,
-      }
-    }
-
-    // transform the data into the format we are expecting
-    try {
-      const rawUsers = response.data
-      const resultUsers: Types.User[] = rawUsers.map(convertUser)
-      return { kind: "ok", users: resultUsers }
-    } catch {
-      return { kind: "bad-data" }
-    }
+  updateJwt(jwt: string) {
+    this.apisauce.setHeader('Authorization', jwt)
   }
 
-  /**
-   * Gets a single user by ID
-   */
+  get<TData, TReq extends keyof AllRoutes>(url: TReq, params?: AllRoutes[TReq]) {
+    return this.apisauce.get<TData>(url, params)
+  }
 
-  async getUser(id: string): Promise<Types.GetUserResult> {
-    // make the api call
-    const response: ApiResponse<any> = await this.apisauce.get(`/users/${id}`)
-
-    // the typical ways to die when calling an api
-    if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
-    }
-
-    // transform the data into the format we are expecting
-    try {
-      const resultUser: Types.User = {
-        id: response.data.id,
-        name: response.data.name,
-      }
-      return { kind: "ok", user: resultUser }
-    } catch {
-      return { kind: "bad-data" }
-    }
+  post<TData, TReq extends keyof AllRoutes>(url: TReq, data: AllRoutes[TReq]) {
+    return this.apisauce.post<TData>(url, data)
   }
 }
+
+export type Response<T> = ApiResponse<T>
