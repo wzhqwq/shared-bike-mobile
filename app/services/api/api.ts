@@ -37,18 +37,20 @@ interface AllRoutes {
   '/maintainer/list_parking_points': { section_id: number }
   '/maintainer/bike/list': { section_id: number }
   '/maintainer/bike/list_to_move': { section_id: number }
+  '/maintainer/bike/find': { series_no: string }
+  '/maintainer/bike/register': { encrypted: string, series_id: number }
+  '/maintainer/bike/activate': { encrypted: string }
   '/maintainer/maintain/start': { bike_id: number }
   '/maintainer/maintain/finish': { bike_id: number, p_longitude: string, p_latitude: string }
   '/maintainer/malfunction/list': Paginator & { bike_id: number }
   '/maintainer/malfunction/handle': RepairRecord
   '/maintainer/repair/list': Paginator
-  '/maintainer/bike/register': { encrypted: string, series_id: number }
-  '/maintainer/bike/activate': { encrypted: string }
   '/manager/property/separated/list/bike': Paginator
   '/manager/property/separated/list/souvenir': Paginator
   '/manager/property/separated/list/other': Paginator
+  '/manager/property/master/statistics': undefined
   '/manager/property/master/list': Paginator
-  '/manager/property/detail': { record_id: number, type: number }
+  '/manager/property/master/detail': { record_id: number, type: number }
   '/manager/property/separated/add/bike': BikeBill
   '/manager/property/separated/add/souvenir': SouvenirBill
   '/manager/property/separated/add/other': OtherBill
@@ -64,20 +66,17 @@ interface AllRoutes {
   '/manager/bike/list/all': Paginator
   '/manager/bike/list/destroyed': Paginator
   '/manager/bike/destroy': DestroyRecord
-  '/manager/bike/series/list': undefined
   '/manager/bike/series/add': BikeSeries
   '/manager/bike/series/modify': BikeSeries
   '/manager/bike/series/remove': { series_id: number }
-  '/manager/bike/malfunction/list': undefined
   '/manager/bike/malfunction/add': Malfunction
   '/manager/bike/malfunction/modify': { malfunction_id: number, part_name: string }
-  '/manager/souvenir/list': undefined
   '/manager/souvenir/add': Souvenir
   '/manager/souvenir/exchanges/list': { customer_id: number }
   '/manager/souvenir/exchanges/give': { record_id: number }
-  '/manager/section/list': undefined
   '/manager/section/add': Section
   '/manager/section/remove': { section_id: number }
+  '/manager/section/maintainer/list': { section_id: number }
   '/manager/section/maintainer/grant': { section_id: number, maintainer_id: number }
   '/manager/section/maintainer/revoke': { section_id: number, maintainer_id: number }
   '/manager/parking_point/list': undefined
@@ -85,6 +84,10 @@ interface AllRoutes {
   '/manager/parking_point/remove': { pp_id: number }
   '/manager/config/list': undefined
   '/manager/config/modify': Configuration[]
+  '/shared/series/list': undefined
+  '/shared/malfunction/list': undefined
+  '/shared/souvenir/list': undefined
+  '/shared/section/list': undefined
 }
 
 /**

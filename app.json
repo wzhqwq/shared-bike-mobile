@@ -19,6 +19,7 @@
       "**/*"
     ],
     "android": {
+      "bundleIdentifier": "com.wzhqwq.sharedbike",
       "icon": "./assets/images/app-icon-android-legacy.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/app-icon-android-adaptive-foreground.png",
@@ -26,6 +27,7 @@
       }
     },
     "ios": {
+      "bundleIdentifier": "com.wzhqwq.sharedbike",
       "icon": "./assets/images/app-icon-ios.png",
       "supportsTablet": true
     },

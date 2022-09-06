@@ -79,6 +79,12 @@ export const RecordStoreModel = types
         self.exchangeRecords.push(...result.data)
       }
     },
+    async listUserExchangeRecords(customerId: number) {
+      const result: Response<ExchangeRecord[]> = await self.environment.api.get('/manager/souvenir/exchanges/list', { customer_id: customerId })
+      if (result.ok) {
+        self.exchangeRecords.push(...result.data)
+      }
+    },
     async listDestroyRecords() {
       const lastId = self.destroyRecords.at(-1)?.id ?? 100000
       const result: Response<DestroyRecord[]> = await self.environment.api.get('/manager/bike/list/destroyed', { last_id: lastId })
@@ -148,6 +154,57 @@ export const RecordStoreModel = types
         self.malfunctionRecords.replace(result.data)
       }
     },
+  })) // eslint-disable-line @typescript-eslint/no-unused-vars
+  .actions((self) => ({
+    async repair(record: RepairRecord) {
+      const result: Response<number[]> = await self.environment.api.post('/maintainer/malfunction/handle', record)
+      if (result.ok) {
+        self.malfunctionRecords.forEach(r => {
+          if (result.data.includes(r.id)) r.status = record.conclusion + 1
+        })
+      }
+      return result.ok
+    },
+    async recharge(record: RechargeRecord) {
+      const result: Response<null> = await self.environment.api.post('/customer/property/recharge', record)
+      if (result.ok) {
+        await self.listMyRechargeRecords()
+      }
+      return result.ok
+    },
+    async exchange(record: ExchangeRecord) {
+      const result: Response<null> = await self.environment.api.post('/customer/souvenir/exchange', record)
+      return result.ok
+    },
+    async destroy(record: DestroyRecord) {
+      const result: Response<null> = await self.environment.api.post('/manager/bike/destroy', record)
+      return result.ok
+    },
+    async purchaseBike(record: BikeBill) {
+      const result: Response<null> = await self.environment.api.post('/manager/property/separated/add/bike', record)
+      if (result.ok) {
+        await self.listBikeBill()
+      }
+      return result.ok
+    },
+    async purchaseSouvenir(record: SouvenirBill) {
+      const result: Response<null> = await self.environment.api.post('/manager/property/separated/add/souvenir', record)
+      if (result.ok) {
+        await self.listSouvenirBill()
+      }
+      return result.ok
+    },
+    async recordOtherBill(record: OtherBill) {
+      const result: Response<null> = await self.environment.api.post('/manager/property/separated/add/other', record)
+      if (result.ok) {
+        await self.listOtherBill()
+      }
+      return result.ok
+    },
+    async report(records: MalfunctionRecord[]) {
+      const result: Response<number> = await self.environment.api.post('/customer/bike/report', records)
+      return result.ok
+    }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export interface RecordStore extends Instance<typeof RecordStoreModel> {}

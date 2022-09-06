@@ -1,4 +1,5 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
+import { withEnvironment } from "../extensions/with-environment"
 
 /**
  * Model description here for TypeScript hints.
@@ -11,10 +12,21 @@ export const BikeSeriesModel = types
     mileage_limit: types.number,
     rent: types.string,
     amount: types.maybe(types.number),
-
   })
+  .extend(withEnvironment)
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
-  .actions((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
+  .actions((self) => ({
+    async modify(name: string, mileageLimit: number, rent: string) {
+      const series = BikeSeriesModel.create({ name, rent, mileage_limit: mileageLimit })
+      const result = await self.environment.api.post('/manager/bike/series/modify', series)
+      if (result.ok) {
+        self.name = name
+        self.mileage_limit = mileageLimit
+        self.rent = rent
+      }
+      return result.ok
+    }
+  })) // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export interface BikeSeries extends Instance<typeof BikeSeriesModel> {}
 export interface BikeSeriesSnapshotOut extends SnapshotOut<typeof BikeSeriesModel> {}
