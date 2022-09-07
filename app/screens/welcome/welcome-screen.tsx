@@ -167,7 +167,7 @@ export const WelcomeScreen: FC<StackScreenProps<NavigatorParamList, "welcome">> 
                 <Text text='填写个人信息表单，等待管理员审核：' />
                 <TextField label="真实姓名" autoCompleteType="name" onChangeText={t => setName(t)} value={name} />
                 <TextField label="手机号" keyboardType="phone-pad" autoCompleteType="tel" onChangeText={t => setPhone(t)} value={phone} />
-                <Button text="提交审核" style={{ alignSelf: 'center' }} loading={submitLoading} onPress={registerAs} />
+                <Button text="提交审核" style={{ alignSelf: 'center' }} loading={submitLoading} onPress={registerAs} disabled={!name || !phone} />
                 <View style={DIVIDER} />
                 <Text text='我已经提交过了：' />
                 <Button text="检查审核状态" style={{ alignSelf: 'center' }} loading={checkLoading} onPress={check} />

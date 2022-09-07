@@ -8,11 +8,12 @@ import React from "react"
 import { useColorScheme } from "react-native"
 import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import { BikesScreen, ConfigSetScreen, LoginScreen, MemberScreen, ProfileScreen, PropertyScreen, RequestScreen, RideScreen, ShopScreen, SignUpScreen, WelcomeScreen } from "../screens"
+import { BikeDetailScreen, BikesScreen, ConfigSetScreen, LoginScreen, MemberScreen, ProfileScreen, PropertyScreen, RequestScreen, RideScreen, SeriesSetScreen, ShopScreen, SignUpScreen, SouvenirSetScreen, WelcomeScreen } from "../screens"
 import { navigationRef, useBackButtonHandler } from "./navigation-utilities"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import { Feather, FontAwesome5, MaterialIcons } from "@expo/vector-icons"
 import { color } from "../theme"
+import { MalfunctionSetScreen } from "../screens/malfunction-set/malfunction-set-screen"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -45,6 +46,8 @@ export type NavigatorParamList = {
   member: undefined
   request: undefined
   bikes: undefined
+  bikeDetail: undefined
+  malfunctionSet: undefined
 }
 
 // Documentation: https://reactnavigation.org/docs/stack-navigator/
@@ -152,6 +155,10 @@ const AppStack = () => {
       <Stack.Screen name="member" component={MemberScreen} />
       <Stack.Screen name="request" component={RequestScreen} />
       <Stack.Screen name="bikes" component={BikesScreen} />
+      <Stack.Screen name="bikeDetail" component={BikeDetailScreen} />
+      <Stack.Screen name="seriesSet" component={SeriesSetScreen} />
+      <Stack.Screen name="malfunctionSet" component={MalfunctionSetScreen} />
+      <Stack.Screen name="souvenirSet" component={SouvenirSetScreen} />
     </Stack.Navigator>
   )
 }

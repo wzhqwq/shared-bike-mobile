@@ -3,7 +3,7 @@ import { observer } from "mobx-react-lite"
 import { Image, ImageStyle, Modal, RefreshControl, ScrollView, TextStyle, View, ViewStyle } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack"
 import { NavigatorParamList } from "../../navigators"
-import { Button, Full, Text } from "../../components"
+import { BottomModal, Button, Full, Text } from "../../components"
 import { color, spacing } from "../../theme"
 import { Customer, ExchangeRecordModel, Souvenir, useStores } from "../../models"
 import { MaterialIcons } from "@expo/vector-icons"
@@ -78,7 +78,7 @@ export const ShopScreen: FC<StackScreenProps<NavigatorParamList, "shop">> = obse
   const { entityStore, userStore } = useStores()
 
   useEffect(() => {
-    entityStore.listSouvenirs()
+    if (!entityStore.souvenirs.length) entityStore.listSouvenirs()
     if (!userStore.me) userStore.fetch()
   }, [])
 
@@ -200,48 +200,40 @@ const PurchasePage = ({ show, souvenir, onClose }: { show: boolean, souvenir: So
   }, [count, souvenir])
 
   return (
-    <Modal visible={show} onRequestClose={onClose} animationType='slide' transparent>
-      <SafeAreaView edges={['bottom']} style={EXCHANGE_CONTAINER}>
-        <View style={EXCHANGE_MODAL}>
-          <View style={MODAL_HEADER}>
-            <Text preset='header'>选择数量</Text>
-            <Button preset='link' onPress={onClose}><MaterialIcons name='close' size={24} /></Button>
-          </View>
-          {
-            Boolean(souvenir && userPoints) && (
-              <>
-                <Image source={souvenir.image_url} style={IMAGE_LARGE} />
-                <Text style={TITLE}>{souvenir.name}</Text>
-                <View style={INFO_CONTAINER}>
-                  <View style={INFO_LINE}>
-                    <Text preset='fieldLabel'>兑换点数：</Text>
-                    <Text style={souvenir.price > userPoints ? PRICE_UNAVAILABLE : {}}>{souvenir.price}</Text>
-                  </View>
-                  <View style={INFO_LINE}>
-                    <Text preset='fieldLabel'>库存数：</Text>
-                    <Text style={souvenir.total_amount === 0 ? PRICE_UNAVAILABLE : {}}>{souvenir.total_amount}</Text>
-                  </View>
-                </View>
-                <View style={BOTTOM_CONTAINER}>
-                  <View style={COUNT_CONTAINER}>
-                    <Text>设置数量</Text>
-                    <Button onPress={() => setCount(c => c - 1)} style={BUTTON_CIRCLE} disabled={count <= 1}>
-                      <MaterialIcons name='remove' size={24} />
-                    </Button>
-                    <Text preset='header'>{count}</Text>
-                    <Button onPress={() => setCount(c => c + 1)} style={BUTTON_CIRCLE} disabled={
-                      (count + 1) * souvenir.price > userPoints || count >= souvenir.total_amount
-                    }>
-                      <MaterialIcons name='add' size={24} />
-                    </Button>
-                  </View>
-                  <Button loading={loading} onPress={exchange} text='确定兑换' />
-                </View>
-              </>
-            )
-          }
-        </View>
-      </SafeAreaView>
-    </Modal>
+    <BottomModal onClose={onClose} show={show} title='兑换纪念品'>
+      {
+        Boolean(souvenir && userPoints) && (
+          <>
+            <Image source={souvenir.image_url} style={IMAGE_LARGE} />
+            <Text style={TITLE}>{souvenir.name}</Text>
+            <View style={INFO_CONTAINER}>
+              <View style={INFO_LINE}>
+                <Text preset='fieldLabel'>兑换点数：</Text>
+                <Text style={souvenir.price > userPoints ? PRICE_UNAVAILABLE : {}}>{souvenir.price}</Text>
+              </View>
+              <View style={INFO_LINE}>
+                <Text preset='fieldLabel'>库存数：</Text>
+                <Text style={souvenir.total_amount === 0 ? PRICE_UNAVAILABLE : {}}>{souvenir.total_amount}</Text>
+              </View>
+            </View>
+            <View style={BOTTOM_CONTAINER}>
+              <View style={COUNT_CONTAINER}>
+                <Text>设置数量</Text>
+                <Button onPress={() => setCount(c => c - 1)} style={BUTTON_CIRCLE} disabled={count <= 1}>
+                  <MaterialIcons name='remove' size={24} />
+                </Button>
+                <Text preset='header'>{count}</Text>
+                <Button onPress={() => setCount(c => c + 1)} style={BUTTON_CIRCLE} disabled={
+                  (count + 1) * souvenir.price > userPoints || count >= souvenir.total_amount
+                }>
+                  <MaterialIcons name='add' size={24} />
+                </Button>
+              </View>
+              <Button loading={loading} onPress={exchange} text='确定兑换' />
+            </View>
+          </>
+        )
+      }
+    </BottomModal>
   )
 }

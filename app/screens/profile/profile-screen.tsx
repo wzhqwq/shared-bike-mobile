@@ -183,6 +183,7 @@ const ManagerList = () => (
   <View style={LIST}>
     {getListItem('member', '所有人员', false, true)}
     {getListItem('request', '注册请求', false, true)}
+    {getListItem('malfunctionSet', '管理基本故障', false, true)}
     {getListItem('configSet', '系统设置', true, true)}
   </View>
 )

@@ -2,7 +2,7 @@ import React, { FC, useEffect, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { FlatList, Image, ImageStyle, ListRenderItemInfo, TextStyle, View, ViewStyle } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack"
-import { goBack, NavigatorParamList } from "../../navigators"
+import { goBack, navigate, NavigatorParamList } from "../../navigators"
 import { Button, Header, Screen, Text } from "../../components"
 // import { useNavigation } from "@react-navigation/native"
 // import { useStores } from "../../models"
@@ -38,7 +38,7 @@ const NOT_ACTIVE: { v: ViewStyle, t: TextStyle} = {
   },
 }
 
-const NO_USER: TextStyle = {
+const NO_DATA: TextStyle = {
   alignSelf: 'center',
   color: color.primary,
   marginTop: spacing[4],
@@ -69,7 +69,7 @@ const Member = observer(({ users, setType, type, next }: { users: User[], setTyp
         />
       ))}
     </View>
-    {!users.length && (<Text style={NO_USER}>没有{roles[type].name}</Text>)}
+    {!users.length && (<Text style={NO_DATA}>没有{roles[type].name}</Text>)}
     <FlatList
       onEndReached={next}
       data={users}
@@ -102,7 +102,7 @@ const USER: ViewStyle = {
   flexDirection: 'row'
 }
 
-const renderItem = ({ item }: ListRenderItemInfo<User>) => (
+const UserItem: FC<{ item: User }> = observer(({ item }) => (
   <View style={LINE}>
     <View style={USER}>
       <Image source={item.avatar_url} style={AVATAR} />
@@ -110,10 +110,11 @@ const renderItem = ({ item }: ListRenderItemInfo<User>) => (
     </View>
     {item.role === CUSTOMER_USER && getBanTimeIfExist(item) && (
       <Button text='解封' onPress={() => (item.extended as Customer).liftTheBan()} />
-      )}
+    )}
     {item.role === MAINTAINER_USER && (
-      <Button text='设置管理区域' onPress={() => (item.extended as Customer).liftTheBan()} />
+      <Button text='设置管理区域' onPress={() => navigate('')} />
     )}
   </View>
-)
-    
+))
+
+const renderItem = ({ item }: ListRenderItemInfo<User>) => (<UserItem item={item} />)
