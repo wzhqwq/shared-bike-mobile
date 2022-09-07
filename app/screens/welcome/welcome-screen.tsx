@@ -1,128 +1,187 @@
-import React, { FC } from "react"
-import { View, ViewStyle, TextStyle, ImageStyle, SafeAreaView } from "react-native"
-import { StackScreenProps } from "@react-navigation/stack"
+/* eslint-disable react-native/no-inline-styles */
+import React, { FC, useCallback, useEffect, useRef, useState } from "react"
 import { observer } from "mobx-react-lite"
-import {
-  Button,
-  Header,
-  Screen,
-  Text,
-  GradientBackground,
-  AutoImage as Image,
-} from "../../components"
-import { color, spacing, typography } from "../../theme"
+import { ActivityIndicator, Animated, View, ViewStyle } from "react-native"
+import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack"
 import { NavigatorParamList } from "../../navigators"
+import { Button, Checkbox, Screen, Text, TextField } from "../../components"
+import { useNavigation } from "@react-navigation/native"
+import { CUSTOMER_USER, MAINTAINER_USER, MANAGER_USER, UNLINKED_USER, useStores } from "../../models"
+import global from "../../global"
+import { spacing } from "../../theme"
+import { color } from "@storybook/theming"
 
-const bowserLogo = require("./bowser.png")
-
-const FULL: ViewStyle = { flex: 1 }
-const CONTAINER: ViewStyle = {
-  backgroundColor: color.transparent,
-  paddingHorizontal: spacing[4],
-}
-const TEXT: TextStyle = {
-  color: color.palette.white,
-  fontFamily: typography.primary,
-}
-const BOLD: TextStyle = { fontWeight: "bold" }
-const HEADER: TextStyle = {
-  paddingTop: spacing[3],
-  paddingBottom: spacing[4] + spacing[1],
-  paddingHorizontal: 0,
-}
-const HEADER_TITLE: TextStyle = {
-  ...TEXT,
-  ...BOLD,
-  fontSize: 12,
-  lineHeight: 15,
-  textAlign: "center",
-  letterSpacing: 1.5,
-}
-const TITLE_WRAPPER: TextStyle = {
-  ...TEXT,
-  textAlign: "center",
-}
-const TITLE: TextStyle = {
-  ...TEXT,
-  ...BOLD,
-  fontSize: 28,
-  lineHeight: 38,
-  textAlign: "center",
-}
-const ALMOST: TextStyle = {
-  ...TEXT,
-  ...BOLD,
-  fontSize: 26,
-  fontStyle: "italic",
-}
-const BOWSER: ImageStyle = {
-  alignSelf: "center",
-  marginVertical: spacing[5],
-  maxWidth: "100%",
-  width: 343,
-  height: 230,
-}
-const CONTENT: TextStyle = {
-  ...TEXT,
-  color: "#BAB6C8",
-  fontSize: 15,
-  lineHeight: 22,
-  marginBottom: spacing[5],
-}
-const CONTINUE: ViewStyle = {
-  paddingVertical: spacing[4],
-  paddingHorizontal: spacing[4],
-  backgroundColor: color.palette.deepPurple,
-}
-const CONTINUE_TEXT: TextStyle = {
-  ...TEXT,
-  ...BOLD,
-  fontSize: 13,
-  letterSpacing: 2,
-}
-const FOOTER: ViewStyle = { backgroundColor: "#20162D" }
-const FOOTER_CONTENT: ViewStyle = {
-  paddingVertical: spacing[4],
-  paddingHorizontal: spacing[4],
+const ROOT: ViewStyle = {
+  justifyContent: 'center',
+  flex: 1,
+  paddingHorizontal: spacing[5],
 }
 
-export const WelcomeScreen: FC<StackScreenProps<NavigatorParamList, "welcome">> = observer(
-  ({ navigation }) => {
-    const nextScreen = () => navigation.navigate("demo")
+const BUTTON_GROUP: ViewStyle = {
+  flexDirection: 'row',
+  justifyContent: 'center',
+}
 
-    return (
-      <View testID="WelcomeScreen" style={FULL}>
-        <GradientBackground colors={["#422443", "#281b34"]} />
-        <Screen style={CONTAINER} preset="scroll" backgroundColor={color.transparent}>
-          <Header headerTx="welcomeScreen.poweredBy" style={HEADER} titleStyle={HEADER_TITLE} />
-          <Text style={TITLE_WRAPPER}>
-            <Text style={TITLE} text="Your new app, " />
-            <Text style={ALMOST} text="almost" />
-            <Text style={TITLE} text="!" />
-          </Text>
-          <Text style={TITLE} preset="header" tx="welcomeScreen.readyForLaunch" />
-          <Image source={bowserLogo} style={BOWSER} />
-          <Text style={CONTENT}>
-            This probably isn't what your app is going to look like. Unless your designer handed you
-            this screen and, in that case, congrats! You're ready to ship.
-          </Text>
-          <Text style={CONTENT}>
-            For everyone else, this is where you'll see a live preview of your fully functioning app
-            using Ignite.
-          </Text>
-        </Screen>
-        <SafeAreaView style={FOOTER}>
-          <View style={FOOTER_CONTENT}>
-            <Button
-              testID="next-screen-button"
-              style={CONTINUE}
-              textStyle={CONTINUE_TEXT}
-              tx="welcomeScreen.continue"
-              onPress={nextScreen}
-            />
-          </View>
-        </SafeAreaView>
-      </View>
-    )
-  },
-)
+const BUTTON_RIGHT: ViewStyle = {
+  marginLeft: spacing[6],
+}
+
+const HIDE: ViewStyle = {
+  position: 'absolute',
+  width: '100%',
+  marginTop: spacing[4],
+}
+
+const DIVIDER: ViewStyle = {
+  height: 1,
+  width: '100%',
+  backgroundColor: color.border,
+  marginVertical: spacing[4],
+}
+
+export const WelcomeScreen: FC<StackScreenProps<NavigatorParamList, "welcome">> = observer(function WelcomeScreen() {
+  const { userStore } = useStores()
+  const navigation = useNavigation<StackNavigationProp<NavigatorParamList>>()
+  const [showGuide, setShowGuide] = useState(false)
+  const [selection, setSelection] = useState(-1)
+  const fadeAnim1 = useRef(new Animated.Value(0)).current
+  const fadeAnim2 = useRef(new Animated.Value(0)).current
+  const slideAnim = useRef(new Animated.Value(0)).current
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [asCustomerLoading, setAsCustomerLoading] = useState(false)
+  const [submitLoading, setSubmitLoading] = useState(false)
+  const [checkLoading, setCheckLoading] = useState(false)
+
+  useEffect(() => {
+    (async () => {
+      if (!userStore.me && !await userStore.fetch()) return
+      if (userStore.me.role !== UNLINKED_USER) {
+        if (navigation.getState().index) {
+          navigation.goBack()
+        }
+        else {
+          switch (userStore.me.role) {
+            case CUSTOMER_USER:
+              navigation.reset({ index: 0, routes: [{ name: 'customer' }] })
+              break
+            case MAINTAINER_USER:
+              navigation.reset({ index: 0, routes: [{ name: 'maintainer' }] })
+              break
+            case MANAGER_USER:
+              navigation.reset({ index: 0, routes: [{ name: 'manager' }] })
+              break
+          }
+        }
+        return
+      }
+      setShowGuide(true)
+    })()
+  }, [userStore.me?.role])
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(
+        fadeAnim1,
+        {
+          toValue: selection === 0 ? 1 : 0,
+          duration: 300,
+          useNativeDriver: false,
+        }
+      ),
+      Animated.timing(
+        fadeAnim2,
+        {
+          toValue: selection > 0 ? 1 : 0,
+          duration: 300,
+          useNativeDriver: false,
+        }
+      ),
+      Animated.timing(
+        slideAnim,
+        {
+          toValue: [0, -100, -500, -500][selection + 1],
+          duration: 300,
+          useNativeDriver: false,
+        }
+      )
+    ]).start()
+  }, [selection])
+
+  const registerAsCustomer = useCallback(() => {
+    setAsCustomerLoading(true)
+    userStore.registerAsCustomer().then(success => {
+      setAsCustomerLoading(false)
+      if (success) navigation.reset({ index: 0, routes: [{ name: 'customer' }] })
+    })
+  }, [])
+
+  const registerAs = useCallback(() => {
+    setSubmitLoading(true)
+    userStore.registerAs(selection - 1, name, phone).then(() => {
+      setSubmitLoading(false)
+    })
+  }, [selection, name, phone])
+
+  const check = useCallback(() => {
+    setCheckLoading(true)
+    userStore.checkRole().then(success => {
+      setCheckLoading(false)
+      if (success) {
+        switch (userStore.me.role) {
+          case MAINTAINER_USER:
+            navigation.reset({ index: 0, routes: [{ name: 'maintainer' }] })
+            break
+          case MANAGER_USER:
+            navigation.reset({ index: 0, routes: [{ name: 'manager' }] })
+            break
+        }
+      }
+    })
+  }, [userStore.me])
+
+  const logOut = useCallback(() => {
+    userStore.logOut().then(() => {
+      navigation.reset({ index: 0, routes: [{ name: 'welcome' }] })
+    })
+  }, [])
+
+  return (
+    <Screen style={ROOT}>
+      {
+        showGuide ? (
+          <Animated.View style={{ marginTop: slideAnim }}>
+            <View style={BUTTON_GROUP}>
+              <Text preset='header' text='选择您注册的用户类型' />
+              <Button style={BUTTON_RIGHT} text='退出登录' onPress={logOut} />
+            </View>
+            <View style={DIVIDER} />
+            <View style={BUTTON_GROUP}>
+              <Checkbox text='学生' onToggle={() => setSelection(0)} value={selection === 0} />
+              <Checkbox text='维护员' style={BUTTON_RIGHT} onToggle={() => setSelection(1)} value={selection === 1} />
+              <Checkbox text='管理员' style={BUTTON_RIGHT} onToggle={() => setSelection(2)} value={selection === 2} />
+            </View>
+            <View>
+              <Animated.View style={[HIDE, { opacity: fadeAnim2 }]}>
+              <View style={DIVIDER} />
+                <Text text='填写个人信息表单，等待管理员审核：' />
+                <TextField label="真实姓名" autoCompleteType="name" onChangeText={t => setName(t)} value={name} />
+                <TextField label="手机号" keyboardType="phone-pad" autoCompleteType="tel" onChangeText={t => setPhone(t)} value={phone} />
+                <Button text="提交审核" style={{ alignSelf: 'center' }} loading={submitLoading} onPress={registerAs} />
+                <View style={DIVIDER} />
+                <Text text='我已经提交过了：' />
+                <Button text="检查审核状态" style={{ alignSelf: 'center' }} loading={checkLoading} onPress={check} />
+              </Animated.View>
+              <Animated.View style={[HIDE, { opacity: fadeAnim1, alignItems: 'center' }]}>
+                <View style={DIVIDER} />
+                <Button text="注册为学生" loading={asCustomerLoading} onPress={registerAsCustomer} />
+              </Animated.View>
+            </View>
+          </Animated.View>
+        ) : (
+          <Button text='登录' onPress={() => navigation.navigate('login')} />
+        )
+      }
+    </Screen>
+  )
+})

@@ -33,41 +33,64 @@ export const EntityStoreModel = types
   .extend(withEnvironment)
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
+    setSectionIdNow(id: number) {
+      self.sectionIdNow = id
+    },
+    setBikeFilter(filter: "danger" | "all" | "destroyed") {
+      self.bikeFilter = filter
+    },
+    setUserCategory(category: 'customer' | 'maintainer' | 'manager') {
+      self.userCategory = category
+    },
+    setSeries(list: BikeSeries[]) {
+      self.seriesList.replace(list)
+    },
+    setSouvenirs(list: Souvenir[]) {
+      self.souvenirs.replace(list)
+    },
+    setBikes(list: Bike[], append = false) {
+      if (append) self.bikes.push(...list)
+      else self.bikes.replace(list)
+    },
+    setSections(list: Section[]) {
+      self.sections.replace(list)
+    },
+    setMalfunctions(list: Malfunction[]) {
+      self.malfunctions.replace(list)
+    },
+    setParkingPoints(list: ParkingPoint[]) {
+      self.parkingPoints.replace(list)
+    },
+    setUsers(list: User[], append = false) {
+      if (append) self.users.push(...list)
+      else self.users.replace(list)
+    },
+    setConfigs(list: Configuration[]) {
+      self.configs.replace(list)
+    }
+  })) // eslint-disable-line @typescript-eslint/no-unused-vars
+  .actions((self) => ({
     async listSeries() {
       const result: Response<BikeSeries[]> = await self.environment.api.get('/shared/series/list')
-      if (result.ok) {
-        self.seriesList.replace(result.data)
-      }
+      if (result.ok) self.setSeries(result.data)
     },
     async listSouvenirs() {
       const result: Response<Souvenir[]> = await self.environment.api.get('/shared/souvenir/list')
-      if (result.ok) {
-        self.souvenirs.replace(result.data)
-      }
+      if (result.ok) self.setSouvenirs(result.data)
     },
-    async listBikesWithFiltering(filter: "danger" | "all" | "destroyed") {
-      const append = filter === self.bikeFilter
-      self.bikeFilter = filter
-      const lastId = self.bikes.at(-1)?.id ?? 100000
+    async listBikesWithFiltering(filter: "danger" | "all" | "destroyed", append: boolean) {
+      self.setBikeFilter(filter)
+      const lastId = append ? (self.bikes.at(-1)?.id ?? 100000) : 10000
       const result: Response<Bike[]> = filter === "danger" ?
-        await self.environment.api.get('/manager/bike/list/danger', { last_id: lastId }) :
+        await self.environment.api.get('/manager/bike/list/danger', { lastId }) :
         filter === "destroyed" ? 
-          await self.environment.api.get('/manager/bike/list/destroyed', { last_id: lastId }) :
-          await self.environment.api.get('/manager/bike/list/all', { last_id: lastId })
-      if (result.ok) {
-        if (append) {
-          self.bikes.push(result.data)
-        }
-        else {
-          self.bikes.replace(result.data)
-        }
-      }
+          await self.environment.api.get('/manager/bike/list/destroyed', { lastId }) :
+          await self.environment.api.get('/manager/bike/list/all', { lastId })
+      if (result.ok) self.setBikes(result.data, append)
     },
     async listBikesInSection() {
       const result: Response<Bike[]> = await self.environment.api.get('/maintainer/bike/list', { section_id: self.sectionIdNow })
-      if (result.ok) {
-        self.bikes.replace(result.data)
-      }
+      if (result.ok) self.setBikes(result.data)
     },
     async listBikesToMove() {
       const result: Response<{ lacks: number[], solution?: number[] }> = await self.environment.api.get('/maintainer/bike/list_to_move', { section_id: self.sectionIdNow })
@@ -75,85 +98,61 @@ export const EntityStoreModel = types
         const { lacks, solution } = result.data
         if (solution) {
           self.bikes.forEach(b => {
-            b.highlighted = solution.includes(b.id)
+            b.setHighlighted(solution.includes(b.id))
           })
         }
         self.parkingPoints.forEach(p => {
-          p.lack_of_bike = lacks.includes(p.id)
+          p.setLackOfBike(lacks.includes(p.id))
         })
       }
     },
     async listBikesAround(longitude: string, latitude: string) {
       const result: Response<Bike[]> = await self.environment.api.get('/customer/bike/list', { longitude, latitude })
-      if (result.ok) {
-        self.bikes.replace(result.data)
-      }
+      if (result.ok) self.setBikes(result.data)
     },
     async fetchConfig() {
       const result: Response<Configuration[]> = await self.environment.api.get('/manager/config/list')
-      if (result.ok) {
-        self.configs.replace(result.data)
-      }
+      if (result.ok) self.setConfigs(result.data)
     },
     async listSections() {
       const result: Response<Section[]> = await self.environment.api.get('/shared/section/list')
-      if (result.ok) {
-        self.sections.replace(result.data)
-      }
+      if (result.ok) self.setSections(result.data)
     },
     async listMalfunctions() {
       const result: Response<Malfunction[]> = await self.environment.api.get('/shared/malfunction/list')
-      if (result.ok) {
-        self.malfunctions.replace(result.data)
-      }
+      if (result.ok) self.setMalfunctions(result.data)
     },
     async listManagingSections() {
-      const result: Response<Configuration[]> = await self.environment.api.get('/maintainer/list_sections')
-      if (result.ok) {
-        self.configs.replace(result.data)
-      }
+      const result: Response<Section[]> = await self.environment.api.get('/maintainer/list_sections')
+      if (result.ok) self.setSections(result.data)
     },
     async listParkingPoints() {
-      const result: Response<Configuration[]> = await self.environment.api.get('/manager/parking_point/list')
-      if (result.ok) {
-        self.configs.replace(result.data)
-      }
+      const result: Response<ParkingPoint[]> = await self.environment.api.get('/manager/parking_point/list')
+      if (result.ok)  self.setParkingPoints(result.data)
     },
     async listParkingPointsInSection() {
       const result: Response<ParkingPoint[]> = await self.environment.api.get('/maintainer/list_parking_points', { section_id: self.sectionIdNow })
-      if (result.ok) {
-        self.parkingPoints.replace(result.data)
-      }
+      if (result.ok) self.setParkingPoints(result.data)
     },
     async listParkingPointsAround(longitude: string, latitude: string) {
       const result: Response<ParkingPoint[]> = await self.environment.api.get('/customer/bike/parking_point/list', { longitude, latitude })
-      if (result.ok) {
-        self.parkingPoints.replace(result.data)
-      }
+      if (result.ok) self.setParkingPoints(result.data)
     },
-    async listUsers(category: 'customer' | 'maintainer' | 'manager') {
-      const append = category === self.userCategory
-      self.userCategory = category
-      const lastId = self.bikes.at(-1)?.id ?? 100000
+    async listUsers(category: 'customer' | 'maintainer' | 'manager', append: boolean) {
+      self.setUserCategory(category)
+      const lastId = append ? (self.users.at(-1)?.id ?? 100000) : 100000
       const result: Response<User[]> = category === "customer" ?
-        await self.environment.api.get('/manager/user/list/customer', { last_id: lastId }) :
+        await self.environment.api.get('/manager/user/list/customer', { lastId }) :
         category === "maintainer" ? 
-          await self.environment.api.get('/manager/user/list/maintainer', { last_id: lastId }) :
-          await self.environment.api.get('/manager/user/list/manager', { last_id: lastId })
-      if (result.ok) {
-        if (append) {
-          self.users.push(result.data)
-        }
-        else {
-          self.users.replace(result.data)
-        }
-      }
+          await self.environment.api.get('/manager/user/list/maintainer', { lastId }) :
+          await self.environment.api.get('/manager/user/list/manager', { lastId })
+      if (result.ok) self.setUsers(result.data, append)
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
     selectSection(sectionId: number) {
       if (self.sectionIdNow === sectionId) return
-      self.sectionIdNow = sectionId
+      self.setSectionIdNow(sectionId)
       self.listBikesInSection()
       self.listParkingPointsInSection()
     },
@@ -161,16 +160,12 @@ export const EntityStoreModel = types
   .actions((self) => ({
     async addSeries(series: BikeSeries) {
       const result: Response<null> = await self.environment.api.post('/manager/bike/series/add', series)
-      if (result.ok) {
-        await self.listSeries()
-      }
+      if (result.ok) await self.listSeries()
       return result.ok
     },
     async addSouvenir(souvenir: Souvenir) {
       const result: Response<null> = await self.environment.api.post('/manager/souvenir/add', souvenir)
-      if (result.ok) {
-        await self.listSouvenirs()
-      }
+      if (result.ok) await self.listSouvenirs()
       return result.ok
     },
     async registerBike(seriesId: number, seriesNo: string) {
@@ -184,58 +179,42 @@ export const EntityStoreModel = types
       if (!encrypted) return false
 
       const activateResult: Response<null> = await self.environment.api.post('/maintainer/bike/activate', { encrypted })
-      if (activateResult.ok) {
-        await self.listBikesInSection()
-      }
+      if (activateResult.ok) await self.listBikesInSection()
       return activateResult.ok
     },
     async addSection(section: Section) {
       const result: Response<null> = await self.environment.api.post('/manager/section/add', section)
-      if (result.ok) {
-        await self.listSections()
-      }
+      if (result.ok) await self.listSections()
       return result.ok
     },
     async addMalfunction(malfunction: Malfunction) {
       const result: Response<null> = await self.environment.api.post('/manager/bike/malfunction/add', malfunction)
-      if (result.ok) {
-        await self.listMalfunctions()
-      }
+      if (result.ok) await self.listMalfunctions()
       return result.ok
     },
     async addParkingPoint(pp: ParkingPoint) {
       const result: Response<null> = await self.environment.api.post('/manager/parking_point/add', pp)
-      if (result.ok) {
-        await self.listParkingPoints()
-      }
+      if (result.ok) await self.listParkingPoints()
       return result.ok
     },
     async modifyConfigs(configs: Configuration[]) {
       const result: Response<null> = await self.environment.api.post('/manager/config/modify', configs)
-      if (result.ok) {
-        await self.fetchConfig()
-      }
+      if (result.ok) await self.fetchConfig()
       return result.ok
     },
     async removeSection(sectionId: number) {
       const result: Response<null> = await self.environment.api.post('/manager/section/remove', { section_id: sectionId })
-      if (result.ok) {
-        await self.listSections()
-      }
+      if (result.ok) await self.listSections()
       return result.ok
     },
     async removeSeries(seriesId: number) {
       const result: Response<null> = await self.environment.api.post('/manager/bike/series/remove', { series_id: seriesId })
-      if (result.ok) {
-        await self.listSeries()
-      }
+      if (result.ok) await self.listSeries()
       return result.ok
     },
     async removeParkingPoint(ppId: number) {
       const result: Response<null> = await self.environment.api.post('/manager/parking_point/remove', { pp_id: ppId })
-      if (result.ok) {
-        await self.listParkingPoints()
-      }
+      if (result.ok) await self.listParkingPoints()
       return result.ok
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars

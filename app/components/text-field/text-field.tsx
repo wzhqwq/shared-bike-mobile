@@ -15,7 +15,10 @@ const INPUT: TextStyle = {
   color: color.text,
   minHeight: 44,
   fontSize: 18,
-  backgroundColor: color.palette.white,
+  backgroundColor: color.backgroundDarker,
+  borderRadius: spacing[1],
+  paddingHorizontal: spacing[4],
+  paddingVertical: spacing[2],
 }
 
 // currently we have no presets, but that changes quickly when you build your app.

@@ -7,49 +7,52 @@ import { RideRecord, RideRecordModel } from "../ride-record/ride-record"
 import { SouvenirBill, SouvenirBillModel } from "../souvenir-bill/souvenir-bill"
 
 
-const detailType = types.maybe(types.union({
+const detailType = types.union({
   dispatcher: o => {
     if (typeof o.series_id === 'number') return BikeBillModel
     if (typeof o.souvenir_id === 'number') return SouvenirBillModel
     if (typeof o.reason === 'string') return OtherBillModel
     return RideRecordModel
   }
-}, BikeBillModel, SouvenirBillModel, OtherBillModel, RideRecordModel))
+}, BikeBillModel, SouvenirBillModel, OtherBillModel, RideRecordModel)
 /**
  * Model description here for TypeScript hints.
  */
 export const ManagerBillModel = types
   .model("ManagerBill")
   .props({
-    id: types.maybe(types.identifierNumber),
+    id: types.optional(types.identifierNumber, -1),
     time: types.maybe(types.Date),
     type: types.number,
     record_id: types.number,
     user_id: types.number,
     change: types.string,
-    details: detailType,
+    details: types.maybe(detailType),
   })
   .extend(withEnvironment)
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
+    setDetails(r: BikeBill | SouvenirBill | OtherBill | RideRecord) {
+      switch (self.type) {
+        case MASTER_BILL_FROM_RIDING:
+          self.details = r as RideRecord
+          break
+        case MASTER_BILL_FROM_BIKE:
+          self.details = r as BikeBill
+          break
+        case MASTER_BILL_FROM_SOUVENIR:
+          self.details = r as SouvenirBill
+          break
+        case MASTER_BILL_FROM_OTHER:
+          self.details = r as OtherBill
+          break
+      }
+    }
+  })) // eslint-disable-line @typescript-eslint/no-unused-vars
+  .actions((self) => ({
     async getDetails() {
       const result: Response<BikeBill | SouvenirBill | OtherBill | RideRecord> = await self.environment.api.get('/manager/property/master/detail', { record_id: self.record_id, type: self.type })
-      if (result.ok) {
-        switch (self.type) {
-          case MASTER_BILL_FROM_RIDING:
-            self.details = result.data as RideRecord
-            break
-          case MASTER_BILL_FROM_BIKE:
-            self.details = result.data as BikeBill
-            break
-          case MASTER_BILL_FROM_SOUVENIR:
-            self.details = result.data as SouvenirBill
-            break
-          case MASTER_BILL_FROM_OTHER:
-            self.details = result.data as OtherBill
-            break
-        }
-      }
+      if (result.ok) self.setDetails(result.data)
       return result.ok
     }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars

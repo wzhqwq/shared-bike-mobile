@@ -8,10 +8,11 @@ import { withEnvironment } from "../extensions/with-environment"
 export const CustomerModel = types
   .model("Customer")
   .props({
-    user_id: types.maybe(types.identifierNumber),
+    user_id: types.optional(types.identifierNumber, -1),
     points: types.number,
     deposit: types.string,
     ban_time: types.maybeNull(types.Date),
+    mileage_total: types.number,
   })
   .extend(withEnvironment)
   .views((self) => ({
@@ -21,11 +22,14 @@ export const CustomerModel = types
     }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
+    clearBanTime() {
+      self.ban_time = null
+    }
+  })) // eslint-disable-line @typescript-eslint/no-unused-vars
+  .actions((self) => ({
     async liftTheBan() {
       const result = await self.environment.api.post('/manager/user/lift_the_ban', { customer_id: self.user_id })
-      if (result.ok) {
-        self.ban_time = null
-      }
+      if (result.ok) self.clearBanTime()
       return result.ok
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars

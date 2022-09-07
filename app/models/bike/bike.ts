@@ -11,15 +11,15 @@ export const BikeModel = types
   .model("Bike")
   .props({
     id: types.identifierNumber,
-    series_no: types.identifier,
+    series_no: types.string,
     series_id: types.number,
     p_longitude: types.string,
     p_latitude: types.string,
     status: types.number,
     mileage: types.number,
     health: types.number,
-    parking_section_id: types.maybe(types.number),
-    parking_point_id: types.maybe(types.number),
+    parking_section_id: types.maybeNull(types.number),
+    parking_point_id: types.maybeNull(types.number),
     fail_count: types.number,
     selected: types.optional(types.boolean, false),
     highlighted: types.optional(types.boolean, false),
@@ -28,6 +28,17 @@ export const BikeModel = types
   .extend(withEnvironment)
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
+    setStatus(status: number) {
+      self.status = status
+    },
+    setHighlighted(b: boolean) {
+      self.highlighted = b
+    },
+    setSelected(b: boolean) {
+      self.selected = b
+    },
+  })) // eslint-disable-line @typescript-eslint/no-unused-vars
+  .actions((self) => ({
     async destroy(reason: string) {
       const record = DestroyRecordModel.create({
         bike_id: self.id,
@@ -35,21 +46,21 @@ export const BikeModel = types
       })
       const result: Response<null> = await self.environment.api.post('/manager/bike/destroy', record)
       if (result.ok) {
-        self.status = BIKE_DESTROYED
+        self.setStatus(BIKE_DESTROYED)
       }
       return result.ok
     },
     async startMaintaining() {
       const result: Response<null> = await self.environment.api.post('/maintainer/maintain/start', { bike_id: self.id })
       if (result.ok) {
-        self.status = BIKE_UNAVAILABLE
+        self.setStatus(BIKE_UNAVAILABLE)
       }
       return result.ok
     },
     async finishMaintaining(longitude: number, latitude: number) {
       const result: Response<null> = await self.environment.api.post('/maintainer/maintain/finish', { bike_id: self.id, p_longitude: longitude.toFixed(6), p_latitude: latitude.toFixed(6) })
       if (result.ok) {
-        self.status = BIKE_AVAILABLE
+        self.setStatus(BIKE_AVAILABLE)
       }
       return result.ok
     },
@@ -65,7 +76,7 @@ export const BikeModel = types
 
       const unlockResult: Response<null> = await self.environment.api.post('/customer/bike/update', { bike_id: self.id, encrypted })
       if (unlockResult.ok) {
-        self.status = BIKE_OCCUPIED
+        self.setStatus(BIKE_OCCUPIED)
       }
       return unlockResult.ok
     },
@@ -79,7 +90,7 @@ export const BikeModel = types
       const encrypted = self.dummy.sendToBike(self.id, 'lock')
       const result: Response<null> = await self.environment.api.post('/customer/bike/update', { bike_id: self.id, encrypted })
       if (result.ok) {
-        self.status = BIKE_AVAILABLE
+        self.setStatus(BIKE_AVAILABLE)
       }
       return result.ok
     },

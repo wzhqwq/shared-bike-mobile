@@ -23,15 +23,21 @@ export const color = {
   /**
    * The screen background.
    */
-  background: palette.white,
+  background: '#EEF2E6',
+
+  backgroundDarker: '#e4e1d4',
   /**
    * The main tinting color.
    */
-  primary: palette.orange,
+  primary: '#3D8361',
   /**
    * The main tinting color, but darker.
    */
-  primaryDarker: palette.orangeDarker,
+  primaryDarker: '#1C6758',
+
+  primaryLight: '#B2E5CC',
+
+  secondary: '#D6CDA4',
   /**
    * A subtle color used for borders and lines.
    */
@@ -39,7 +45,7 @@ export const color = {
   /**
    * The default color of text in many components.
    */
-  text: palette.white,
+  text: palette.black,
   /**
    * Secondary information.
    */

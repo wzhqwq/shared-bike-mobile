@@ -28,7 +28,8 @@ export class Environment {
       await this.reactotron.setup()
     }
     this.api.setup()
-    this.localUser = UserModel.create(await storage.load('user') ?? {})
+    const user = await storage.load('user')
+    this.localUser = user ? UserModel.create(user) : null
     this.jwt = await storage.load('jwt')
     if (this.jwt) this.api.updateJwt(this.jwt)
   }
@@ -42,6 +43,13 @@ export class Environment {
     this.jwt = jwt
     this.api.updateJwt(jwt)
     await storage.save('jwt', jwt)
+  }
+
+  async removeUser() {
+    await storage.clear()
+    this.jwt = ''
+    this.api.updateJwt('')
+    this.localUser = null
   }
 
   /**

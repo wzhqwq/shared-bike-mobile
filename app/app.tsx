@@ -65,7 +65,10 @@ function App() {
               initialState={initialNavigationState}
               onStateChange={onNavigationStateChange}
             />
-            <ToastContainer ref={ref => { global.toast = ref }} />
+            <ToastContainer
+              offsetBottom={100}
+              ref={ref => { global.toast = ref }}
+            />
           </ErrorBoundary>
         </SafeAreaProvider>
       </RootStoreProvider>

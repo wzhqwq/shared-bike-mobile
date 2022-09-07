@@ -15,11 +15,14 @@ export const MalfunctionModel = types
   .extend(withEnvironment)
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
+    updatePartName(partName: string) {
+      self.part_name = partName
+    }
+  })) // eslint-disable-line @typescript-eslint/no-unused-vars
+  .actions((self) => ({
     async modifyPartName(partName: string) {
       const result: Response<null> = await self.environment.api.post('/manager/bike/malfunction/modify', { malfunction_id: self.id, part_name: partName })
-      if (result.ok) {
-        self.part_name = partName
-      }
+      if (result.ok) self.updatePartName(partName)
       return result.ok
     }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars

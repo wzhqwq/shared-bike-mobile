@@ -6,8 +6,8 @@ import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 export const StatisticModel = types
   .model("Statistic")
   .props({
-    income: types.string,
-    expenditure: types.string,
+    income: types.maybeNull(types.number),
+    expenditure: types.maybeNull(types.number),
     availableCount: types.number,
     occupiedCount: types.number,
     unavailableCount: types.number,

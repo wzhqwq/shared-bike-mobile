@@ -167,12 +167,6 @@ export class Reactotron {
         command: "navigateTo",
         handler: (args) => {
           const { route } = args
-          if (route) {
-            console.log(`Navigating to: ${route}`)
-            navigate(route)
-          } else {
-            console.log("Could not navigate. No route provided.")
-          }
         },
         title: "Navigate To Screen",
         description: "Navigates to a screen by name.",

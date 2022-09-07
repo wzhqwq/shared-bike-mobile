@@ -6,7 +6,7 @@ import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 export const PointRecordModel = types
   .model("PointRecord")
   .props({
-    id: types.maybe(types.identifierNumber),
+    id: types.optional(types.identifierNumber, -1),
     time: types.maybe(types.Date),
     type: types.number,
     record_id: types.number,

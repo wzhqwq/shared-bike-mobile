@@ -6,7 +6,7 @@ import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 export const PunishRecordModel = types
   .model("PunishRecord")
   .props({
-    id: types.maybe(types.identifierNumber),
+    id: types.optional(types.identifierNumber, -1),
     time: types.maybe(types.Date),
     customer_id: types.number,
     points_deducted: types.number,

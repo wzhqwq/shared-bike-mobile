@@ -1,4 +1,4 @@
-export const BASE_URL = "https://sharedbike.s.wzhqwq.xyz"
+export const BASE_URL = "https://shared-bike.s.wzhqwq.xyz"
 /**
  * The options used to configure the API.
  */

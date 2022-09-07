@@ -1,7 +1,6 @@
-import moment from "moment";
-import { AMapSdk } from "react-native-amap3d";
+import moment from "moment"
+import "moment/locale/zh-cn"
 
-AMapSdk.init('8846b317117dd623af10ee26869e5538')
 type ToastType = import("react-native-toast-notifications").ToastType;
 
 const global: {

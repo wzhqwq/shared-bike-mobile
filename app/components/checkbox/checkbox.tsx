@@ -10,25 +10,26 @@ const ROOT: ViewStyle = {
   alignSelf: "flex-start",
 }
 
-const DIMENSIONS = { width: 16, height: 16 }
+const DIMENSIONS = { width: 20, height: 20 }
 
 const OUTLINE: ViewStyle = {
   ...DIMENSIONS,
   marginTop: 2, // finicky and will depend on font/line-height/baseline/weather
   justifyContent: "center",
   alignItems: "center",
-  borderWidth: 1,
+  borderWidth: 2,
   borderColor: color.primaryDarker,
-  borderRadius: 1,
+  borderRadius: DIMENSIONS.width / 2,
 }
 
 const FILL: ViewStyle = {
-  width: DIMENSIONS.width - 4,
-  height: DIMENSIONS.height - 4,
+  width: DIMENSIONS.width - 8,
+  height: DIMENSIONS.height - 8,
   backgroundColor: color.primary,
+  borderRadius: OUTLINE.borderRadius - 4,
 }
 
-const LABEL: TextStyle = { paddingLeft: spacing[2], color: color.palette.black }
+const LABEL: TextStyle = { paddingLeft: spacing[2], color: color.palette.black, fontSize: 16 }
 
 export function Checkbox(props: CheckboxProps) {
   const numberOfLines = props.multiline ? 0 : 1

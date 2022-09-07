@@ -1,9 +1,18 @@
 import * as React from "react"
-import { TouchableOpacity } from "react-native"
+import { ActivityIndicator, TouchableOpacity, ViewStyle } from "react-native"
+import { spacing } from "../../theme"
 import { Text } from "../text/text"
 import { viewPresets, textPresets } from "./button.presets"
 import { ButtonProps } from "./button.props"
 
+
+const SPINNER: ViewStyle = {
+  marginLeft: spacing[2],
+}
+
+const DISABLED: ViewStyle = {
+  opacity: 0.5,
+}
 /**
  * For your text displaying needs.
  *
@@ -18,6 +27,7 @@ export function Button(props: ButtonProps) {
     style: styleOverride,
     textStyle: textStyleOverride,
     children,
+    loading = false,
     ...rest
   } = props
 
@@ -28,8 +38,12 @@ export function Button(props: ButtonProps) {
 
   const content = children || <Text tx={tx} text={text} style={textStyles} />
 
+  const disabled = rest.disabled || loading
+  if (disabled) viewStyles.push(DISABLED)
+
   return (
-    <TouchableOpacity style={viewStyles} {...rest}>
+    <TouchableOpacity style={viewStyles} {...rest} disabled={disabled}>
+      {loading && (<ActivityIndicator style={SPINNER} color='white' />)}
       {content}
     </TouchableOpacity>
   )

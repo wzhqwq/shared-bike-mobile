@@ -10,13 +10,13 @@ import { User } from "../user/user"
 export const ExchangeRecordModel = types
   .model("ExchangeRecord")
   .props({
-    id: types.maybe(types.identifierNumber),
+    id: types.optional(types.identifierNumber, -1),
     time: types.maybe(types.Date),
     souvenir_id: types.number,
     customer_id: types.maybe(types.number),
     amount: types.number,
     given: types.maybe(types.number),
-    given_by: types.maybe(types.number),
+    given_by: types.maybeNull(types.number),
   })
   .extend(withEnvironment)
   .views((self) => ({
@@ -27,12 +27,15 @@ export const ExchangeRecordModel = types
     }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
+    setGiven() {
+      self.given = 1
+      self.given_by = self.environment.localUser.id
+    }
+  })) // eslint-disable-line @typescript-eslint/no-unused-vars
+  .actions((self) => ({
     async give() {
       const result: Response<null> = await self.environment.api.post('/manager/souvenir/exchanges/give', { record_id: self.id })
-      if (result.ok) {
-        self.given = 1
-        self.given_by = self.environment.localUser.id
-      }
+      if (result.ok) self.setGiven()
       return result.ok
     }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars

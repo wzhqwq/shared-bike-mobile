@@ -16,14 +16,17 @@ export const BikeSeriesModel = types
   .extend(withEnvironment)
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
+    updateSelf(name: string, mileageLimit: number, rent: string) {
+      self.name = name
+      self.mileage_limit = mileageLimit
+      self.rent = rent
+    }
+  })) // eslint-disable-line @typescript-eslint/no-unused-vars
+  .actions((self) => ({
     async modify(name: string, mileageLimit: number, rent: string) {
       const series = BikeSeriesModel.create({ name, rent, mileage_limit: mileageLimit })
       const result = await self.environment.api.post('/manager/bike/series/modify', series)
-      if (result.ok) {
-        self.name = name
-        self.mileage_limit = mileageLimit
-        self.rent = rent
-      }
+      if (result.ok) self.updateSelf(name, mileageLimit, rent)
       return result.ok
     }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars

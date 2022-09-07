@@ -9,6 +9,7 @@ export const ConfigurationModel = types
     id: types.identifierNumber,
     key: types.maybe(types.string),
     value: types.number,
+    is_float: types.maybe(types.number),
   })
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars

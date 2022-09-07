@@ -6,7 +6,7 @@ import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 export const SectionModel = types
   .model("Section")
   .props({
-    id: types.maybe(types.identifierNumber),
+    id: types.optional(types.identifierNumber, -1),
     tr_longitude: types.string,
     tr_latitude: types.string,
     bl_longitude: types.string,

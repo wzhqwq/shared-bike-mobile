@@ -6,7 +6,7 @@ import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 export const SouvenirBillModel = types
   .model("SouvenirBill")
   .props({
-    id: types.maybe(types.identifierNumber),
+    id: types.optional(types.identifierNumber, -1),
     time: types.maybe(types.Date),
     expense: types.string,
     manager_id: types.maybe(types.number),

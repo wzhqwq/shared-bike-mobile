@@ -5,7 +5,7 @@ import { navigate } from "../../navigators"
 import { ApiConfig, DEFAULT_API_CONFIG } from "./api-config"
 
 export type Paginator = {
-  last_id: number
+  lastId: number
   size?: number
 }
 
@@ -129,23 +129,18 @@ export class Api {
         Accept: "application/json",
       },
     })
-    this.apisauce.addMonitor(response => {
+    this.apisauce.addResponseTransform(response => {
       if (response.status === 401) {
         navigate("login")
-        global.toast.show("请登录")
+        global.toast.show("请登录", { type: 'danger' })
         return
       }
       if (response.status !== 200) {
-        global.toast.show(response.data)
+        global.toast.show(response.data ?? response.problem, { type: 'danger' })
         return
       }
       if (!response.data.status) {
-        global.toast.show(response.data.error)
-      }
-    })
-    this.apisauce.addResponseTransform(response => {
-      if (response.status !== 200) return
-      if (!response.data.status) {
+        global.toast.show(response.data.error, { type: 'danger' })
         response.ok = false
         return
       }
@@ -158,14 +153,14 @@ export class Api {
       if (response.data instanceof Array) {
         response.data.forEach(convertor)
       }
-      else {
+      else if (response.data) {
         convertor(response.data)
       }
     })
   }
 
   updateJwt(jwt: string) {
-    this.apisauce.setHeader('Authorization', jwt)
+    this.apisauce.setHeader('Authorization', 'Bearer ' + jwt)
   }
 
   get<TData, TReq extends keyof AllRoutes>(url: TReq, params?: AllRoutes[TReq]) {

@@ -6,7 +6,7 @@ import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 export const ParkingPointModel = types
   .model("ParkingPoint")
   .props({
-    id: types.maybe(types.identifierNumber),
+    id: types.optional(types.identifierNumber, -1),
     p_longitude: types.string,
     p_latitude: types.string,
     bikes_count: types.maybe(types.number),
@@ -15,7 +15,11 @@ export const ParkingPointModel = types
     lack_of_bike: types.optional(types.boolean, false),
   })
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
-  .actions((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
+  .actions((self) => ({
+    setLackOfBike(b: boolean) {
+      self.lack_of_bike = b
+    }
+  })) // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export interface ParkingPoint extends Instance<typeof ParkingPointModel> {}
 export interface ParkingPointSnapshotOut extends SnapshotOut<typeof ParkingPointModel> {}
