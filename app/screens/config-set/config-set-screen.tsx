@@ -94,6 +94,7 @@ export const ConfigSetScreen: FC<StackScreenProps<NavigatorParamList, "configSet
                   value={values[id - 1]}
                   keyboardType={isFloat ? 'numbers-and-punctuation' : 'number-pad'}
                   onChangeText={t => setValues(vs => vs.map((v, i) => i === id - 1 ? t : v))}
+                  returnKeyType='done'
                 />
               </View>
             ))}

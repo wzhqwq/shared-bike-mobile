@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from "react"
+import React, { FC, useCallback, useEffect, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { FlatList, ListRenderItemInfo, TextStyle, TouchableHighlight, View, ViewStyle } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack"
@@ -7,6 +7,7 @@ import { Button, Header, Screen, Text } from "../../components"
 import { useStores, Bike } from "../../models"
 import { color, spacing } from "../../theme"
 import { MaterialIcons } from "@expo/vector-icons"
+import { NO_DATA } from "../../global"
 
 const ROOT: ViewStyle = {
   backgroundColor: color.background,
@@ -31,12 +32,6 @@ const NOT_ACTIVE: { v: ViewStyle, t: TextStyle} = {
   },
 }
 
-const NO_DATA: TextStyle = {
-  alignSelf: 'center',
-  color: color.primary,
-  marginTop: spacing[4],
-}
-
 const filters: { name: string, category: 'danger' | 'all' | 'destroyed' }[] = [
   { name: '危险', category: 'danger' },
   { name: '全部', category: 'all' },
@@ -46,43 +41,46 @@ const filters: { name: string, category: 'danger' | 'all' | 'destroyed' }[] = [
 export const BikesScreen: FC<StackScreenProps<NavigatorParamList, "bikes">> = observer(function BikesScreen() {
   const { entityStore } = useStores()
   const [type, setType] = useState(0)
+  const [refreshing, setRefreshing] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const version = entityStore.bikesVersion
 
-  useEffect(() => {
-    entityStore.listBikesWithFiltering(filters[type].category, false)
+  const refresh = useCallback(() => {
+    entityStore.listBikesWithFiltering(filters[type].category, false).then(() => setRefreshing(false))
   }, [type])
-  
 
-  return (<BikeView
-    bikes={entityStore.bikes}
-    next={() => entityStore.listBikesWithFiltering(filters[type].category, true)} 
-    type={type}
-    setType={setType}
-  />)
+  const next = useCallback(() => {
+    entityStore.listBikesWithFiltering(filters[type].category, true)
+  }, [])
+
+  useEffect(() => refresh(), [type])
+
+  return (
+    <Screen style={ROOT}>
+      <Header headerText="管理单车" hasBack onLeftPress={goBack} />
+      <View style={SELECTOR}>
+        {filters.map(({ name }, i) => (
+          <Button
+            style={i !== type ? NOT_ACTIVE.v : undefined}
+            textStyle={i !== type ? NOT_ACTIVE.t : undefined}
+            text={name}
+            key={i}
+            onPress={() => setType(i)}
+          />
+        ))}
+      </View>
+      {!entityStore.bikes.length && (<Text style={NO_DATA}>没有符合{filters[type].name}条件的单车</Text>)}
+      <FlatList
+        onEndReached={next}
+        data={entityStore.bikes}
+        renderItem={renderItem}
+        keyExtractor={item => item.id.toString()}
+        onRefresh={refresh}
+        refreshing={refreshing}
+      />
+    </Screen>
+  )
 })
-
-const BikeView: FC<{ bikes: Bike[], next: () => void, type: number, setType: (t: number) => void }> = observer(({ bikes, next, type, setType }) => (
-  <Screen style={ROOT}>
-    <Header headerText="管理单车" hasBack onLeftPress={goBack} />
-    <View style={SELECTOR}>
-      {filters.map(({ name }, i) => (
-        <Button
-          style={i !== type ? NOT_ACTIVE.v : undefined}
-          textStyle={i !== type ? NOT_ACTIVE.t : undefined}
-          text={name}
-          key={i}
-          onPress={() => setType(i)}
-        />
-      ))}
-    </View>
-    {!bikes.length && (<Text style={NO_DATA}>没有符合{filters[type].name}条件的单车</Text>)}
-    <FlatList
-      onEndReached={next}
-      data={bikes}
-      renderItem={renderItem}
-      keyExtractor={item => item.id.toString()}
-    />
-  </Screen>
-))
 
 const INFO_LINE: ViewStyle = {
   flexDirection: 'row',
@@ -107,14 +105,18 @@ const STATUS_LINE: ViewStyle = {
 const STATUS_AVAILABLE: ViewStyle = {
   width: 10,
   height: 10,
+  borderRadius: 5,
   backgroundColor: color.primary,
+  marginRight: spacing[1],
 }
 
 const STATUS_OCCUPIED: ViewStyle = {
   width: 6,
   height: 6,
   borderWidth: 2,
+  borderRadius: 3,
   borderColor: color.primary,
+  marginRight: spacing[1],
 }
 
 const STATUS_UNAVAILABLE: ViewStyle = {
@@ -134,24 +136,32 @@ const statusComponents = [
   (<View key={3} style={STATUS_LINE}><View style={STATUS_DESTROYED} /><Text>已注销</Text></View>),
 ]
 
-const BikeItem: FC<{ item: Bike }> = observer(({ item }) => (
-  <TouchableHighlight activeOpacity={0.7} underlayColor='#FFF' onPress={() => navigate('bikeDetail', { id: item.id })} style={LINE}>
-    <View>
-      <View style={INFO_LINE}>
-        <Text preset='fieldLabel'>序列号：</Text>
-        <Text>{item.series_no}</Text>
+const renderItem = ({ item }: ListRenderItemInfo<Bike>) => (
+  <TouchableHighlight activeOpacity={0.7} underlayColor='#FFF' onPress={() => navigate('bikeDetail', { bikeId: item.id })}>
+    <View style={LINE}>
+      <View>
+        <View style={INFO_LINE}>
+          <Text preset='fieldLabel'>序列号：</Text>
+          <Text>{item.series_no}</Text>
+        </View>
+        <View style={INFO_LINE}>
+          <Text preset='fieldLabel'>状态：</Text>
+          <Text>{statusComponents[item.status]}</Text>
+        </View>
+        <View style={INFO_LINE}>
+          <Text preset='fieldLabel'>健康值：</Text>
+          <Text>{item.health}</Text>
+        </View>
+        <View style={INFO_LINE}>
+          <Text preset='fieldLabel'>总行驶里程：</Text>
+          <Text>{item.mileage} 公里</Text>
+        </View>
+        <View style={INFO_LINE}>
+          <Text preset='fieldLabel'>维修失败次数：</Text>
+          <Text>{item.fail_count}</Text>
+        </View>
       </View>
-      <View style={INFO_LINE}>
-        <Text preset='fieldLabel'>状态：</Text>
-        <Text>{statusComponents[item.status]}</Text>
-      </View>
-      <View style={INFO_LINE}>
-        <Text preset='fieldLabel'>健康值：</Text>
-        <Text>{item.health}</Text>
-      </View>
+      <MaterialIcons name='chevron-right' size={24} />
     </View>
-    <MaterialIcons name='chevron-right' size={24} />
   </TouchableHighlight>
-))
-
-const renderItem = ({ item }: ListRenderItemInfo<Bike>) => (<BikeItem item={item} />)
+)

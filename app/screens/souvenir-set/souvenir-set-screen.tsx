@@ -143,8 +143,8 @@ const SetSouvenirModal: FC<{ show: boolean, souvenir: Souvenir, onClose: () => v
 
   return (
     <BottomModal onClose={onClose} show={show} title={souvenir ? '修改故障名称' : '创建基本故障'} up={focused}>
-      <TextField label="物品名称" onChangeText={t => setName(t)} value={name} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
-      <TextField label="兑换点数" keyboardType='number-pad' onChangeText={t => setPrice(t)} value={price} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} placeholder='1~50的整数' />
+      <TextField label="物品名称" onChangeText={t => setName(t)} value={name} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} returnKeyType='done' />
+      <TextField label="兑换点数" keyboardType='number-pad' onChangeText={t => setPrice(t)} value={price} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} placeholder='1~50的整数' returnKeyType='done' />
       <Button loading={loading} onPress={submit} text={souvenir ? '修改' : '创建'} disabled={!ok} />
     </BottomModal>
   )

@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from "react"
+import React, { FC, useCallback, useEffect, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { FlatList, Image, ImageStyle, ListRenderItemInfo, TextStyle, View, ViewStyle } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack"
@@ -47,37 +47,51 @@ const NO_DATA: TextStyle = {
 export const MemberScreen: FC<StackScreenProps<NavigatorParamList, "member">> = observer(function MemberScreen() {
   const { entityStore } = useStores()
   const [type, setType] = useState(0)
+  const [refreshing, setRefreshing] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const version = entityStore.usersVersion
 
-  useEffect(() => {
-    entityStore.listUsers(roles[type].category, false)
+  const refresh = useCallback(() => {
+    entityStore.listUsers(roles[type].category, false).then(() => setRefreshing(false))
   }, [type])
 
-  return (<Member users={entityStore.users} setType={setType} type={type} next={() => entityStore.listUsers(roles[type].category, true)} />)
-})
+  const next = useCallback(() => {
+    if (refreshing) return
+    entityStore.listUsers(roles[type].category, true)
+    console.log('next!!!')
+  }, [type])
 
-const Member = observer(({ users, setType, type, next }: { users: User[], setType: (t: number) => void, type: number, next: () => void }) => (
-  <Screen style={ROOT}>
-    <Header headerText="所有用户" hasBack onLeftPress={goBack} />
-    <View style={SELECTOR}>
-      {roles.map(({ name }, i) => (
-        <Button
-          style={i !== type ? NOT_ACTIVE.v : undefined}
-          textStyle={i !== type ? NOT_ACTIVE.t : undefined}
-          text={name}
-          key={i}
-          onPress={() => setType(i)}
-        />
-      ))}
-    </View>
-    {!users.length && (<Text style={NO_DATA}>没有{roles[type].name}</Text>)}
-    <FlatList
-      onEndReached={next}
-      data={users}
-      renderItem={renderItem}
-      keyExtractor={item => item.id.toString()}
-    />
-  </Screen>
-))
+  useEffect(() => refresh(), [type])
+
+  return (
+    <Screen style={ROOT}>
+      <Header headerText="所有用户" hasBack onLeftPress={goBack} />
+      <View style={SELECTOR}>
+        {roles.map(({ name }, i) => (
+          <Button
+            style={i !== type ? NOT_ACTIVE.v : undefined}
+            textStyle={i !== type ? NOT_ACTIVE.t : undefined}
+            text={name}
+            key={i}
+            onPress={() => setType(i)}
+          />
+        ))}
+      </View>
+      {!entityStore.users.length && (<Text style={NO_DATA}>没有{roles[type].name}</Text>)}
+      <FlatList
+        onEndReached={next}
+        data={entityStore.users}
+        renderItem={renderItem}
+        keyExtractor={item => {
+          console.log(item.id)
+          return item.id.toString()
+        }}
+        onRefresh={refresh}
+        refreshing={refreshing}
+      />
+    </Screen>
+  )
+})
 
 const LINE: ViewStyle = {
   flexDirection: 'row',
@@ -108,11 +122,13 @@ const UserItem: FC<{ item: User }> = observer(({ item }) => (
       <Image source={item.avatar_url} style={AVATAR} />
       <Text preset='default'>{item.nickname}{getNameIfExist(item)}</Text>
     </View>
-    {item.role === CUSTOMER_USER && getBanTimeIfExist(item) && (
-      <Button text='解封' onPress={() => (item.extended as Customer).liftTheBan()} />
-    )}
-    {item.role === MAINTAINER_USER && (
-      <Button text='设置管理区域' onPress={() => navigate('')} />
+    {item.role === CUSTOMER_USER && (
+      <>
+        {getBanTimeIfExist(item) && (
+          <Button text='解封' onPress={() => (item.extended as Customer).liftTheBan()} />
+        )}
+        <Button text='查看兑换记录' onPress={() => navigate('exchangeSet', { customerId: item.id })} />
+      </>
     )}
   </View>
 ))

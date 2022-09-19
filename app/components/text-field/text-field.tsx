@@ -13,12 +13,11 @@ const CONTAINER: ViewStyle = {
 const INPUT: TextStyle = {
   fontFamily: typography.primary,
   color: color.text,
-  minHeight: 44,
   fontSize: 18,
   backgroundColor: color.backgroundDarker,
   borderRadius: spacing[1],
   paddingHorizontal: spacing[4],
-  paddingVertical: spacing[2],
+  paddingVertical: spacing[3],
 }
 
 // currently we have no presets, but that changes quickly when you build your app.

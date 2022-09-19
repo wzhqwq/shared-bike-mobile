@@ -29,7 +29,13 @@ export class Environment {
     }
     this.api.setup()
     const user = await storage.load('user')
-    this.localUser = user ? UserModel.create(user) : null
+    try {
+      this.localUser = user ? UserModel.create(user) : null
+    }
+    catch (e) {
+      await storage.remove('user')
+      this.localUser = null
+    }
     this.jwt = await storage.load('jwt')
     if (this.jwt) this.api.updateJwt(this.jwt)
   }

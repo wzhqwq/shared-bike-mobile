@@ -16,7 +16,7 @@ export const CustomerModel = types
   })
   .extend(withEnvironment)
   .views((self) => ({
-    banTimeHuman: () => {
+    get banTimeHuman() {
       if (!self.ban_time || self.ban_time < new Date()) return null
       return moment(self.ban_time).fromNow() + '解封'
     }

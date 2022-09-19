@@ -1,4 +1,5 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
+import { LatLng } from "react-native-maps"
 import { Response } from "../../services/api"
 import { DummyBike, DummyBikeModel } from "../../services/bluetooth/bikeCommunication"
 import { DestroyRecordModel } from "../destroy-record/destroy-record"
@@ -26,10 +27,18 @@ export const BikeModel = types
     dummy: types.maybe(DummyBikeModel)
   })
   .extend(withEnvironment)
-  .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
+  .views((self) => ({
+    get coordinate(): LatLng {
+      return { latitude: parseFloat(self.p_latitude), longitude: parseFloat(self.p_longitude) }
+    },
+  })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
     setStatus(status: number) {
       self.status = status
+    },
+    setPos(longitude: number, latitude: number) {
+      self.p_latitude = latitude.toFixed(6)
+      self.p_longitude = longitude.toFixed(6)
     },
     setHighlighted(b: boolean) {
       self.highlighted = b
@@ -57,22 +66,26 @@ export const BikeModel = types
       }
       return result.ok
     },
-    async finishMaintaining(longitude: number, latitude: number) {
-      const result: Response<null> = await self.environment.api.post('/maintainer/maintain/finish', { bike_id: self.id, p_longitude: longitude.toFixed(6), p_latitude: latitude.toFixed(6) })
+    async finishMaintaining(pos: LatLng) {
+      const result: Response<null> = await self.environment.api.post('/maintainer/maintain/finish', { bike_id: self.id, p_longitude: pos.longitude.toFixed(6), p_latitude: pos.latitude.toFixed(6) })
       if (result.ok) {
         self.setStatus(BIKE_AVAILABLE)
+        self.setPos(pos.longitude, pos.latitude)
       }
       return result.ok
     },
-    startCommunication(seriesNo: string) {
-      self.dummy = new DummyBike(seriesNo)
+    startCommunication() {
+      self.dummy = new DummyBike(self.series_no)
     },
-    async unlockBike() {
-      const encrypted = self.dummy.sendToBike(self.id, 'unlock')
+    async unlockBike(pos: LatLng) {
+      let encrypted = self.dummy.sendToBike(self.id, 'unlock')
       const identifyResult: Response<null> = await self.environment.api.post('/customer/bike/unlock', { bike_id: self.id, encrypted })
       if (!identifyResult.ok) return false
       
       if (!self.dummy.verifyServer(identifyResult.data)) return false
+
+      self.dummy.setPosition(pos)
+      encrypted = self.dummy.sendToBike(self.id, 'update')
 
       const unlockResult: Response<null> = await self.environment.api.post('/customer/bike/update', { bike_id: self.id, encrypted })
       if (unlockResult.ok) {
@@ -80,19 +93,23 @@ export const BikeModel = types
       }
       return unlockResult.ok
     },
-    async updateBike(longitude: number, latitude: number) {
-      self.dummy.setPosition(longitude, latitude)
+    async updateBike(pos: LatLng) {
+      self.dummy.setPosition(pos)
       const encrypted = self.dummy.sendToBike(self.id, 'update')
-      const result: Response<null> = await self.environment.api.post('/customer/bike/update', { bike_id: self.id, encrypted })
-      return result.ok
+      const result: Response<string> = await self.environment.api.post('/customer/bike/update', { bike_id: self.id, encrypted })
+      if (result.ok) {
+        return result.data.split(',')
+      }
+      return null
     },
     async lockBike() {
       const encrypted = self.dummy.sendToBike(self.id, 'lock')
-      const result: Response<null> = await self.environment.api.post('/customer/bike/update', { bike_id: self.id, encrypted })
+      const result: Response<string> = await self.environment.api.post('/customer/bike/update', { bike_id: self.id, encrypted })
       if (result.ok) {
         self.setStatus(BIKE_AVAILABLE)
+        return result.data.split(',')
       }
-      return result.ok
+      return null
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
 

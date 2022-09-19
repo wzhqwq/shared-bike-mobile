@@ -28,6 +28,7 @@ export function Button(props: ButtonProps) {
     textStyle: textStyleOverride,
     children,
     loading = false,
+    hideWhenLoading = false,
     ...rest
   } = props
 
@@ -44,7 +45,7 @@ export function Button(props: ButtonProps) {
   return (
     <TouchableOpacity style={viewStyles} {...rest} disabled={disabled}>
       {loading && (<ActivityIndicator style={SPINNER} color='white' />)}
-      {content}
+      {!(hideWhenLoading && loading) && content}
     </TouchableOpacity>
   )
 }

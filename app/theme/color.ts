@@ -30,6 +30,8 @@ export const color = {
    * The main tinting color.
    */
   primary: '#3D8361',
+
+  primaryTransparent: '#3D836122',
   /**
    * The main tinting color, but darker.
    */

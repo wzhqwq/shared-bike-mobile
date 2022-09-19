@@ -1,12 +1,15 @@
-import React, { FC } from "react"
+import React, { FC, useCallback, useEffect, useRef, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { View, ViewStyle } from "react-native"
+import { Animated, TextStyle, View, ViewStyle } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack"
-import { NavigatorParamList } from "../../navigators"
-import { BikeMap } from "../../components"
+import { navigate, NavigatorParamList } from "../../navigators"
+import { BikeMap, BottomModal, BottomPaper, Button, Text } from "../../components"
 // import { useNavigation } from "@react-navigation/native"
-// import { useStores } from "../../models"
-import { color } from "../../theme"
+import { Bike, BIKE_AVAILABLE, useStores } from "../../models"
+import { color, spacing } from "../../theme"
+import { Scanner } from "../../components/scanner/scanner"
+import { MaterialIcons } from "@expo/vector-icons"
+import { LatLng, MapEvent, Marker } from "react-native-maps"
 
 const ROOT: ViewStyle = {
   backgroundColor: color.background,
@@ -14,15 +17,226 @@ const ROOT: ViewStyle = {
   paddingTop: 0,
 }
 
+const WHITE: TextStyle = {
+  color: 'white',
+  marginLeft: spacing[2],
+}
+
 export const RideScreen: FC<StackScreenProps<NavigatorParamList, "ride">> = observer(function RideScreen() {
   // Pull in one of our MST stores
-  // const { someStore, anotherStore } = useStores()
+  const { userStore, entityStore } = useStores()
+  const [posDrag, setPosDrag] = useState<LatLng>(null)
+  const [showScanner, setShowScanner] = useState(false)
+  const [bikeNow, setBikeNow] = useState<Bike>(undefined)
+  const [showOperateBike, setShowOperateBike] = useState(false)
 
-  // Pull in navigation via hook
-  // const navigation = useNavigation()
+  const [cost, setCost] = useState('0.00')
+  const [time, setTime] = useState('0:00')
+  const [started, setStarted] = useState(false)
+  const [ended, setEnded] = useState(false)
+  const posRef = useRef(posDrag)
+  const [recordId, setRecordId] = useState(0)
+
+  const operateBike = useCallback((bike: Bike) => {
+    setBikeNow(bike)
+    setShowOperateBike(true)
+    bike.setSelected(true)
+  }, [])
+  
+  const searchBike = useCallback(value => {
+    setShowScanner(false);
+    (async () => {
+      if (userStore.me || await userStore.fetch()) await userStore.findBike(value)
+    })()
+  }, [userStore.me])
+
+  const scan = useCallback(() => {
+    setShowScanner(true)
+    userStore.setBikeNow(undefined)
+    setBikeNow(undefined)
+  }, [])
+
+  const lock = useCallback(() => {
+    bikeNow.lockBike().then(result => {
+      if (!result) return
+      setTime(result[0])
+      setCost(result[1])
+      setRecordId(parseInt(result[2]))
+      setStarted(false)
+      setEnded(true)
+    })
+  }, [bikeNow])
+
+  const update = useCallback(() => {
+    bikeNow.updateBike(posRef.current).then(result => {
+      if (!result) return
+      setTime(result[0])
+      setCost(result[1])
+    })
+  }, [bikeNow])
+
+  const ride = useCallback(() => {
+    bikeNow.startCommunication()
+    bikeNow.unlockBike(bikeNow.coordinate).then(success => {
+      if (success) {
+        setStarted(true)
+        setPosDrag(bikeNow.coordinate)
+      }
+    })
+  }, [bikeNow])
+
+  const updateBike = useCallback((b: Bike) => {
+    if (started || !showOperateBike) return
+    setBikeNow(b)
+    b?.setSelected(true)
+    if (!b) setShowOperateBike(false)
+  }, [started, showOperateBike])
+
+  useEffect(() => {
+    if (!entityStore.seriesList.length) entityStore.listSeries()
+  }, [])
+
+  useEffect(() => {
+    if (started) {
+      posRef.current = posDrag
+      bikeNow.dummy.setPosition(posRef.current)
+      update()
+    }
+  }, [posDrag])
+
+  useEffect(() => {
+    if (bikeNow && started) {
+      const t = window.setInterval(update, 2000)
+      return () => {
+        window.clearInterval(t)
+      }
+    }
+    return null
+  }, [started])
+
   return (
     <View style={ROOT}>
-      <BikeMap showBikes showSections={false} mode='findBike' />
+      <BikeMap
+        showBikes={!started}
+        showParkingPoints
+        showSections={false}
+        mode='customer'
+        onBikePress={operateBike}
+        onBikeUpdate={updateBike}
+        bottomButtons={(
+          <Button onPress={scan}>
+            <MaterialIcons name='qr-code-scanner' size={24} color='white' />
+            <Text style={WHITE}>扫码骑车</Text>
+          </Button>
+        )}
+      >
+        {started && (<DragBike pos={posDrag} setPos={setPosDrag} />)}
+      </BikeMap>
+      <BottomPaper hideClose={started} onClose={() => {
+        setShowOperateBike(false)
+        bikeNow.setSelected(false)
+        setEnded(false)
+      }} show={showOperateBike} title={entityStore.seriesList.find(s => s.id === bikeNow?.series_id)?.name ?? '单车'}>
+        {bikeNow && (
+          (started || ended) ? (
+            <>
+              <View style={INFO_GROUP}>
+                <View style={INFO_GROUP_ITEM}>
+                  <Text preset='fieldLabel' text='使用时长' />
+                  <Text preset='header' text={time} />
+                </View>
+                <View style={INFO_GROUP_ITEM}>
+                  <Text preset='fieldLabel' text='费用' />
+                  <Text preset='header' text={cost} />
+                </View>
+              </View>
+              {started && (<Button text='关锁' onPress={lock} />)}
+              {ended && (<Button text='上报故障' onPress={() => navigate('reportMalfunction', { rideId: recordId })} />)}
+            </>
+          ) : (
+            <>
+              <View style={INFO_LINE}><Text preset='fieldLabel'>序列号：</Text><Text>{bikeNow.series_no}</Text></View>
+              <View style={INFO_LINE}><Text preset='fieldLabel'>健康值：</Text><Text>{bikeNow.health}</Text></View>
+              <View style={INFO_LINE}><Text preset='fieldLabel'>总骑行里程：</Text><Text>{bikeNow.mileage} 公里</Text></View>
+              <View style={INFO_LINE}><Text preset='fieldLabel'>押金：</Text><Text>{entityStore.seriesList.find(s => s.id === bikeNow.series_id)?.rent ?? '？'} 元</Text></View>
+              <Button text='开锁骑车' onPress={ride} />
+            </>
+          )
+        )}
+      </BottomPaper>
+      <Scanner show={showScanner} onCancel={() => setShowScanner(false)} onResult={searchBike} />
     </View>
   )
 })
+
+const LINE: ViewStyle = {
+  flexDirection: 'row',
+  alignItems: 'center',
+}
+
+const INFO_LINE: ViewStyle = {
+  ...LINE,
+  marginBottom: spacing[2],
+}
+
+const PAD: ViewStyle = {
+  padding: spacing[4],
+}
+
+const BIKE_DRAG: ViewStyle = {
+  padding: spacing[2],
+  borderRadius: 20,
+  backgroundColor: color.primary,
+}
+
+const DragBike = ({ pos, setPos }: { pos: LatLng, setPos: (p: LatLng) => void }) => {
+  const slideAnim = useRef(new Animated.Value(1)).current
+
+  const styles = [BIKE_DRAG, { transform: [{ scale: slideAnim }] }]
+
+  const drag = useCallback(() => {
+    Animated.timing(
+      slideAnim,
+      {
+        toValue: 1.5,
+        duration: 300,
+        useNativeDriver: false,
+      }
+    ).start()
+  }, [])
+  const drop = useCallback((e: MapEvent) => {
+    setPos(e.nativeEvent.coordinate)
+    Animated.timing(
+      slideAnim,
+      {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: false,
+      }
+    ).start()
+  }, [])
+
+  return (
+    <Marker coordinate={pos} onDragStart={drag} onDragEnd={drop} draggable>
+      <View style={PAD}>
+        <Animated.View style={styles}>
+          <MaterialIcons name='pedal-bike' color='white' size={16} />
+        </Animated.View>
+      </View>
+    </Marker>
+  )
+}
+
+const INFO_GROUP: ViewStyle = {
+  alignItems: 'center',
+  flexDirection: 'row',
+  marginHorizontal: -spacing[3],
+  paddingTop: spacing[4],
+}
+
+const INFO_GROUP_ITEM: ViewStyle = {
+  alignItems: 'center',
+  flexGrow: 1,
+  marginHorizontal: spacing[1],
+  borderRadius: spacing[1],
+}

@@ -34,7 +34,6 @@ export const PropertyScreen: FC<StackScreenProps<NavigatorParamList, "property">
   const [refreshing, setRefreshing] = React.useState(false)
 
   const refresh = useCallback(() => {
-    setRefreshing(true)
     userStore.getStatistics()
       .then(() => entityStore.listSeries())
       .then(() => setRefreshing(false))
@@ -109,6 +108,7 @@ const StatisticView = observer(({ statistic, refreshing, refresh, seriesList }: 
                 backgroundColor={color.backgroundDarker}
                 paddingLeft='15'
                 chartConfig={{ color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})` }}
+                absolute
               />
             </TouchableOpacity>
             <Text preset='bold'>单车型号分布</Text>
@@ -117,11 +117,12 @@ const StatisticView = observer(({ statistic, refreshing, refresh, seriesList }: 
                 style={PIE_BLOCK}
                 data={pieData2}
                 width={350}
-                height={300}
+                height={220}
                 accessor='count'
                 backgroundColor={color.backgroundDarker}
-                paddingLeft='15'
+                paddingLeft='20'
                 chartConfig={{ color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})` }}
+                absolute
               />
             </TouchableOpacity>
           </>

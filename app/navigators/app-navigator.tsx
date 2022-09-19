@@ -8,12 +8,20 @@ import React from "react"
 import { useColorScheme } from "react-native"
 import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import { BikeDetailScreen, BikesScreen, ConfigSetScreen, LoginScreen, MemberScreen, ProfileScreen, PropertyScreen, RequestScreen, RideScreen, SeriesSetScreen, ShopScreen, SignUpScreen, SouvenirSetScreen, WelcomeScreen } from "../screens"
+import { BikeDetailScreen, BikeMalfunctionScreen, BikeManageScreen, BikesScreen, ConfigSetScreen, GeoEditScreen, LoginScreen, MemberScreen, ProfileScreen, PropertyScreen, RequestScreen, RideScreen, SeriesSetScreen, ShopScreen, SignUpScreen, SouvenirSetScreen, WelcomeScreen } from "../screens"
 import { navigationRef, useBackButtonHandler } from "./navigation-utilities"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import { Feather, FontAwesome5, MaterialIcons } from "@expo/vector-icons"
 import { color } from "../theme"
 import { MalfunctionSetScreen } from "../screens/malfunction-set/malfunction-set-screen"
+import { SectionPermissionScreen } from "../screens/section-permission/section-permission-screen"
+import { RechargeSetScreen } from "../screens/recharge-set/recharge-set-screen"
+import { ExchangeSetScreen } from "../screens/exchange-set/exchange-set-screen"
+import { PointSetScreen } from "../screens/point-set/point-set-screen"
+import { DepositSetScreen } from "../screens/deposit-set/deposit-set-screen"
+import { RideSetScreen } from "../screens/ride-set/ride-set-screen"
+import { MalfunctionHandleScreen } from "../screens/malfunction-handle/malfunction-handle-screen"
+import { ReportMalfunctionScreen } from "../screens/report-malfunction/report-malfunction-screen"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -46,8 +54,18 @@ export type NavigatorParamList = {
   member: undefined
   request: undefined
   bikes: undefined
-  bikeDetail: undefined
+  bikeDetail: { bikeId: number }
   malfunctionSet: undefined
+  bikeManage: undefined
+  sectionPermission: { sectionId: number }
+  rechargeSet: undefined
+  exchangeSet: { customerId?: number }
+  pointSet: undefined
+  depositSet: undefined
+  rideSet: undefined
+  bikeMalfunction: { bikeId: number }
+  malfunctionHandle: { bikeId: number, malfunctionId: number }
+  reportMalfunction: { rideId: number }
 }
 
 // Documentation: https://reactnavigation.org/docs/stack-navigator/
@@ -88,22 +106,19 @@ const MaintainerTabs = () => {
     <MTTab.Navigator screenOptions={({ route }) => ({
       tabBarIcon: ({ color, size }) => {
         switch (route.name) {
-          case 'ride':
+          case 'bikeManage':
             return <MaterialIcons size={size} name='pedal-bike' color={color} />
-          case 'shop':
-            return <Feather size={20} name='package' color={color} />
           default:
             return <MaterialIcons size={size} name='person-outline' color={color} />
         }
       },
-      title: route.name === 'ride' ? '骑行' : (route.name === 'shop' ? '兑换' : '我'),
+      title: route.name === 'bikeManage' ? '单车管理' : '我',
       headerBackgroundContainerStyle: {
         backgroundColor: color.background,
       },
       tabBarActiveTintColor: color.primaryDarker,
     })}>
-      <MTTab.Screen name="ride" component={RideScreen} />
-      <MTTab.Screen name="shop" component={ShopScreen} />
+      <MTTab.Screen name="bikeManage" component={BikeManageScreen} />
       <MTTab.Screen name="profile" component={ProfileScreen} />
     </MTTab.Navigator>
   )
@@ -131,7 +146,7 @@ const ManagerTabs = () => {
       tabBarActiveTintColor: color.primaryDarker,
     })}>
       <MNTab.Screen name="property" component={PropertyScreen} />
-      <MNTab.Screen name="geoEdit" component={ShopScreen} />
+      <MNTab.Screen name="geoEdit" component={GeoEditScreen} />
       <MNTab.Screen name="profile" component={ProfileScreen} />
     </MNTab.Navigator>
   )
@@ -159,6 +174,15 @@ const AppStack = () => {
       <Stack.Screen name="seriesSet" component={SeriesSetScreen} />
       <Stack.Screen name="malfunctionSet" component={MalfunctionSetScreen} />
       <Stack.Screen name="souvenirSet" component={SouvenirSetScreen} />
+      <Stack.Screen name="sectionPermission" component={SectionPermissionScreen} />
+      <Stack.Screen name="rechargeSet" component={RechargeSetScreen} />
+      <Stack.Screen name="exchangeSet" component={ExchangeSetScreen} />
+      <Stack.Screen name="pointSet" component={PointSetScreen} />
+      <Stack.Screen name="depositSet" component={DepositSetScreen} />
+      <Stack.Screen name="rideSet" component={RideSetScreen} />
+      <Stack.Screen name="malfunctionHandle" component={MalfunctionHandleScreen} />
+      <Stack.Screen name="reportMalfunction" component={ReportMalfunctionScreen} />
+      <Stack.Screen name="bikeMalfunction" component={BikeMalfunctionScreen} />
     </Stack.Navigator>
   )
 }

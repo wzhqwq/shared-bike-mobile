@@ -1,4 +1,5 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
+import { LatLng } from "react-native-maps"
 import { Response } from "../../services/api"
 import { DummyBike } from "../../services/bluetooth/bikeCommunication"
 import { BikeSeries, BikeSeriesModel } from "../bike-series/bike-series"
@@ -17,6 +18,15 @@ import { User, UserModel } from "../user/user"
 export const EntityStoreModel = types
   .model("EntityStore")
   .props({
+    seriesListVersion: types.optional(types.number, 0),
+    souvenirsVersion: types.optional(types.number, 0),
+    bikesVersion: types.optional(types.number, 0),
+    configsVersion: types.optional(types.number, 0),
+    sectionsVersion: types.optional(types.number, 0),
+    malfunctionsVersion: types.optional(types.number, 0),
+    parkingPointsVersion: types.optional(types.number, 0),
+    usersVersion: types.optional(types.number, 0),
+    
     seriesList: types.optional(types.array(BikeSeriesModel), []),
     souvenirs: types.optional(types.array(SouvenirModel), []),
     bikes: types.optional(types.array(BikeModel), []),
@@ -44,29 +54,37 @@ export const EntityStoreModel = types
     },
     setSeries(list: BikeSeries[]) {
       self.seriesList.replace(list)
+      self.seriesListVersion++
     },
     setSouvenirs(list: Souvenir[]) {
       self.souvenirs.replace(list)
+      self.souvenirsVersion++
     },
     setBikes(list: Bike[], append = false) {
       if (append) self.bikes.push(...list)
       else self.bikes.replace(list)
+      self.bikesVersion++
     },
     setSections(list: Section[]) {
       self.sections.replace(list)
+      self.sectionsVersion++
     },
     setMalfunctions(list: Malfunction[]) {
       self.malfunctions.replace(list)
+      self.malfunctionsVersion++
     },
     setParkingPoints(list: ParkingPoint[]) {
       self.parkingPoints.replace(list)
+      self.parkingPointsVersion++
     },
     setUsers(list: User[], append = false) {
       if (append) self.users.push(...list)
       else self.users.replace(list)
+      self.usersVersion++
     },
     setConfigs(list: Configuration[]) {
       self.configs.replace(list)
+      self.configsVersion++
     }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
@@ -79,6 +97,7 @@ export const EntityStoreModel = types
       if (result.ok) self.setSouvenirs(result.data)
     },
     async listBikesWithFiltering(filter: "danger" | "all" | "destroyed", append: boolean) {
+      if (append && filter !== self.bikeFilter) return
       self.setBikeFilter(filter)
       const lastId = append ? (self.bikes.at(-1)?.id ?? 100000) : 10000
       const result: Response<Bike[]> = filter === "danger" ?
@@ -139,6 +158,7 @@ export const EntityStoreModel = types
       if (result.ok) self.setParkingPoints(result.data)
     },
     async listUsers(category: 'customer' | 'maintainer' | 'manager', append: boolean) {
+      if (append && category !== self.userCategory) return
       self.setUserCategory(category)
       const lastId = append ? (self.users.at(-1)?.id ?? 100000) : 100000
       const result: Response<User[]> = category === "customer" ?
@@ -168,8 +188,9 @@ export const EntityStoreModel = types
       if (result.ok) await self.listSouvenirs()
       return result.ok
     },
-    async registerBike(seriesId: number, seriesNo: string) {
+    async registerBike(seriesId: number, seriesNo: string, pos: LatLng) {
       const dummy = new DummyBike(seriesNo)
+      dummy.setPosition(pos)
       let encrypted = dummy.getInfo()
 
       const registerResult: Response<string> = await self.environment.api.post('/maintainer/bike/register', { series_id: seriesId, encrypted })

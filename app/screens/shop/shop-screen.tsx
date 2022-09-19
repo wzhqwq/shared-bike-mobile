@@ -1,6 +1,6 @@
-import React, { FC, useCallback, useEffect, useState } from "react"
+import React, { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { Image, ImageStyle, Modal, RefreshControl, ScrollView, TextStyle, View, ViewStyle } from "react-native"
+import { Image, ImageStyle, RefreshControl, ScrollView, TextStyle, View, ViewStyle } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack"
 import { NavigatorParamList } from "../../navigators"
 import { BottomModal, Button, Full, Text } from "../../components"
@@ -8,7 +8,6 @@ import { color, spacing } from "../../theme"
 import { Customer, ExchangeRecordModel, Souvenir, useStores } from "../../models"
 import { MaterialIcons } from "@expo/vector-icons"
 import global from "../../global"
-import { SafeAreaView } from "react-native-safe-area-context"
 
 const ROOT: ViewStyle = {
   justifyContent: "center",
@@ -92,35 +91,39 @@ export const ShopScreen: FC<StackScreenProps<NavigatorParamList, "shop">> = obse
     entityStore.listSouvenirs().then(() => setRefreshing(false))
   }, [])
 
+  const souvenirs = useMemo(() =>
+    entityStore.souvenirs.map((s, i) => (
+      <View style={SOUVENIR} key={i}>
+        <Image source={s.image_url} style={IMAGE} />
+        <Text style={TITLE}>{s.name}</Text>
+        <View style={BOTTOM_CONTAINER}>
+          <View style={INFO_CONTAINER}>
+            <View style={INFO_LINE}>
+              <Text preset='fieldLabel'>兑换点数：</Text>
+              <Text style={s.price > userPoints ? PRICE_UNAVAILABLE : {}}>{s.price}</Text>
+            </View>
+            <View style={INFO_LINE}>
+              <Text preset='fieldLabel'>库存数：</Text>
+              <Text style={s.total_amount === 0 ? PRICE_UNAVAILABLE : {}}>{s.total_amount}</Text>
+            </View>
+          </View>
+          <Button style={BUTTON} disabled={s.price > userPoints || s.total_amount === 0} onPress={() => {
+            setShow(true)
+            setSouvenir(s)
+          }}>
+            <MaterialIcons name='shopping-cart' color='white' size={18} />
+          </Button>
+        </View>
+      </View>
+    )
+  ), [entityStore.souvenirsVersion])
+
   return (
     <View style={ROOT}>
       <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}>
         {entityStore.souvenirs.length ? (
           <View style={SOUVENIR_CONTAINER}>
-            {entityStore.souvenirs?.map((s, i) => (
-              <View style={SOUVENIR} key={i}>
-                <Image source={s.image_url} style={IMAGE} />
-                <Text style={TITLE}>{s.name}</Text>
-                <View style={BOTTOM_CONTAINER}>
-                  <View style={INFO_CONTAINER}>
-                    <View style={INFO_LINE}>
-                      <Text preset='fieldLabel'>兑换点数：</Text>
-                      <Text style={s.price > userPoints ? PRICE_UNAVAILABLE : {}}>{s.price}</Text>
-                    </View>
-                    <View style={INFO_LINE}>
-                      <Text preset='fieldLabel'>库存数：</Text>
-                      <Text style={s.total_amount === 0 ? PRICE_UNAVAILABLE : {}}>{s.total_amount}</Text>
-                    </View>
-                  </View>
-                  <Button style={BUTTON} disabled={s.price > userPoints || s.total_amount === 0} onPress={() => {
-                    setShow(true)
-                    setSouvenir(s)
-                  }}>
-                    <MaterialIcons name='shopping-cart' color='white' size={18} />
-                  </Button>
-                </View>
-              </View>
-            ))}
+            {souvenirs}
           </View>
         ) : (<Full message='暂无纪念品' />)}
       </ScrollView>
@@ -129,33 +132,11 @@ export const ShopScreen: FC<StackScreenProps<NavigatorParamList, "shop">> = obse
   )
 })
 
-const EXCHANGE_CONTAINER: ViewStyle = {
-  justifyContent: 'flex-end',
-  flex: 1,
-}
-const EXCHANGE_MODAL: ViewStyle = {
-  height: 500,
-  backgroundColor: color.background,
-  borderRadius: spacing[2],
-  shadowColor: '#000',
-  shadowRadius: 2,
-  shadowOpacity: 0.3,
-  shadowOffset: { width: -0.5, height: 0.5 },
-  marginHorizontal: spacing[4],
-  padding: spacing[4],
-}
-
 const IMAGE_LARGE: ImageStyle = {
   ...IMAGE,
   width: 300,
   height: 300,
   marginVertical: spacing[2],
-}
-
-const MODAL_HEADER: ViewStyle = {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
 }
 
 const COUNT_CONTAINER: ViewStyle = {

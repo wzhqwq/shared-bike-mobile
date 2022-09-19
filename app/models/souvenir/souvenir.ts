@@ -1,4 +1,5 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
+import { ImageURISource } from "react-native"
 import { Response } from "../../services/api"
 import { BASE_URL } from "../../services/api/api-config"
 import { withEnvironment } from "../extensions/with-environment"
@@ -18,9 +19,9 @@ export const SouvenirModel = types
   })
   .extend(withEnvironment)
   .views((self) => ({
-    get image_url() {
+    get image_url(): ImageURISource {
       if (!self.image_key) return giftIcon
-      return BASE_URL + '/image/show?key=' + self.image_key
+      return { uri: BASE_URL + '/image/show?key=' + self.image_key }
     }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({

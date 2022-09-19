@@ -24,148 +24,206 @@ export const RecordStoreModel = types
   .model("RecordStore")
   .extend(withEnvironment)
   .props({
-    // customer
+    rideRecordsVersion: types.optional(types.number, 0),
+    repairRecordsVersion: types.optional(types.number, 0),
+    rechargeRecordsVersion: types.optional(types.number, 0),
+    exchangeRecordsVersion: types.optional(types.number, 0),
+    destroyRecordsVersion: types.optional(types.number, 0),
+    bikeBillsVersion: types.optional(types.number, 0),
+    souvenirBillsVersion: types.optional(types.number, 0),
+    otherBillsVersion: types.optional(types.number, 0),
+    depositRecordsVersion: types.optional(types.number, 0),
+    pointRecordsVersion: types.optional(types.number, 0),
+    masterBillsVersion: types.optional(types.number, 0),
+    signUpRequestsVersion: types.optional(types.number, 0),
+    malfunctionRecordsVersion: types.optional(types.number, 0),
+    
     rideRecords: types.optional(types.array(RideRecordModel), []),
-    // maintainer
     repairRecords: types.optional(types.array(RepairRecordModel), []),
-    // customer
     rechargeRecords: types.optional(types.array(RechargeRecordModel), []),
-    // customer, manager
     exchangeRecords: types.optional(types.array(MixedExchangeRecordModel), []),
-    // manager
     destroyRecords: types.optional(types.array(DestroyRecordModel), []),
-    // manager
     bikeBills: types.optional(types.array(BikeBillModel), []),
-    // manager
     souvenirBills: types.optional(types.array(SouvenirBillModel), []),
-    // manager
     otherBills: types.optional(types.array(OtherBillModel), []),
-    // customer
     depositRecords: types.optional(types.array(DepositRecordModel), []),
-    // customer
     pointRecords: types.optional(types.array(PointRecordModel), []),
-    // manager
     masterBills: types.optional(types.array(ManagerBillModel), []),
-    // manager
     signUpRequests: types.optional(types.array(SignUpRequestModel), []),
-    // customer, maintainer
     malfunctionRecords: types.optional(types.array(MalfunctionRecordModel), []),
   })
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
-    async setRideRecords(data: RideRecord[]) {
-      self.rideRecords.push(...data)
+    async setRideRecords(data: RideRecord[], append: boolean) {
+      if (append)
+        self.rideRecords.push(...data)
+      else
+        self.rideRecords.replace(data)
+      self.rideRecordsVersion++
     },
-    async setRepairRecords(data: RepairRecord[]) {
-      self.repairRecords.push(...data)
+    async setRepairRecords(data: RepairRecord[], append: boolean) {
+      if (append)
+        self.repairRecords.push(...data)
+      else
+        self.repairRecords.replace(data)
+      self.repairRecordsVersion++
     },
-    async setRechargeRecords(data: RechargeRecord[]) {
-      self.rechargeRecords.push(...data)
+    async setRechargeRecords(data: RechargeRecord[], append: boolean) {
+      if (append)
+        self.rechargeRecords.push(...data)
+      else
+        self.rechargeRecords.replace(data)
+      self.rechargeRecordsVersion++
     },
-    async setExchangeRecords(data: MixedExchangeRecord[]) {
-      self.exchangeRecords.push(...data)
+    async setExchangeRecords(data: MixedExchangeRecord[], append: boolean) {
+      if (append)
+        self.exchangeRecords.push(...data)
+      else
+        self.exchangeRecords.replace(data)
+      self.exchangeRecordsVersion++
     },
-    async setDestroyRecords(data: DestroyRecord[]) {
-      self.destroyRecords.push(...data)
+    async setDestroyRecords(data: DestroyRecord[], append: boolean) {
+      if (append)
+        self.destroyRecords.push(...data)
+      else
+        self.destroyRecords.replace(data)
+      self.destroyRecordsVersion++
     },
-    async setBikeBills(data: BikeBill[]) {
-      self.bikeBills.push(...data)
+    async setBikeBills(data: BikeBill[], append: boolean) {
+      if (append)
+        self.bikeBills.push(...data)
+      else
+        self.bikeBills.replace(data)
+      self.bikeBillsVersion++
     },
-    async setSouvenirBills(data: SouvenirBill[]) {
-      self.souvenirBills.push(...data)
+    async setSouvenirBills(data: SouvenirBill[], append: boolean) {
+      if (append)
+        self.souvenirBills.push(...data)
+      else
+        self.souvenirBills.replace(data)
+      self.souvenirBillsVersion++
     },
-    async setOtherBills(data: OtherBill[]) {
-      self.otherBills.push(...data)
+    async setOtherBills(data: OtherBill[], append: boolean) {
+      if (append)
+        self.otherBills.push(...data)
+      else
+        self.otherBills.replace(data)
+      self.otherBillsVersion++
     },
-    async setMasterBills(data: ManagerBill[]) {
-      self.masterBills.push(...data)
+    async setMasterBills(data: ManagerBill[], append: boolean) {
+      if (append)
+        self.masterBills.push(...data)
+      else
+        self.masterBills.replace(data)
+      self.masterBillsVersion++
     },
-    async setDepositRecords(data: DepositRecord[]) {
-      self.depositRecords.push(...data)
+    async setDepositRecords(data: DepositRecord[], append: boolean) {
+      if (append)
+        self.depositRecords.push(...data)
+      else
+        self.depositRecords.replace(data)
+      self.depositRecordsVersion++
     },
-    async setPointRecords(data: PointRecord[]) {
-      self.pointRecords.push(...data)
+    async setPointRecords(data: PointRecord[], append: boolean) {
+      if (append)
+        self.pointRecords.push(...data)
+      else
+        self.pointRecords.replace(data)
+      self.pointRecordsVersion++
     },
-    async setSignUpRequests(data: SignUpRequest[]) {
-      self.signUpRequests.push(...data)
+    async setSignUpRequests(data: SignUpRequest[], append: boolean) {
+      if (append)
+        self.signUpRequests.push(...data)
+      else
+        self.signUpRequests.replace(data)
+      self.signUpRequestsVersion++
     },
-    async setMalfunctionRecords(data: MalfunctionRecord[]) {
-      self.malfunctionRecords.replace(data)
+    async setMalfunctionRecords(data: MalfunctionRecord[], append: boolean) {
+      if (append)
+        self.malfunctionRecords.push(...data)
+      else
+        self.malfunctionRecords.replace(data)
+      self.malfunctionRecordsVersion++
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
-    async listMyRideRecords() {
-      const lastId = self.rideRecords.at(-1)?.id ?? 100000
+    async listMyRideRecords(append = true) {
+      const lastId = append ? self.rideRecords.at(-1)?.id ?? 100000 : 100000
       const result: Response<RideRecord[]> = await self.environment.api.get('/customer/bike/record/list/ride', { lastId })
-      if (result.ok) self.setRideRecords(result.data)
+      if (result.ok) self.setRideRecords(result.data, append)
     },
-    async listMyRepairRecords() {
-      const lastId = self.repairRecords.at(-1)?.id ?? 100000
+    async listMyRepairRecords(append = true) {
+      const lastId = append ? self.repairRecords.at(-1)?.id ?? 100000 : 100000
       const result: Response<RepairRecord[]> = await self.environment.api.get('/maintainer/repair/list', { lastId })
-      if (result.ok) self.setRepairRecords(result.data)
+      if (result.ok) self.setRepairRecords(result.data, append)
     },
-    async listMyRechargeRecords() {
-      const lastId = self.rechargeRecords.at(-1)?.id ?? 100000
+    async listMyRechargeRecords(append = true) {
+      const lastId = append ? self.rechargeRecords.at(-1)?.id ?? 100000 : 100000
       const result: Response<RechargeRecord[]> = await self.environment.api.get('/customer/property/list/recharge', { lastId })
-      if (result.ok) self.setRechargeRecords(result.data)
+      if (result.ok) self.setRechargeRecords(result.data, append)
     },
-    async listMyExchangeRecords() {
-      const lastId = self.exchangeRecords.at(-1)?.record.id ?? 100000
+    async listMyExchangeRecords(append = true) {
+      const lastId = append ? self.exchangeRecords.at(-1)?.record.id ?? 100000 : 100000
       const result: Response<[ExchangeRecord, Souvenir][]> = await self.environment.api.get('/customer/souvenir/exchanged/list', { lastId })
-      if (result.ok) self.setExchangeRecords(result.data.map(([r, s]) => MixedExchangeRecordModel.create({ record: r, souvenir: s })))
+      if (result.ok) self.setExchangeRecords(
+        result.data.map(([r, s]) => MixedExchangeRecordModel.create({ record: r, souvenir: s })),
+        append,
+      )
     },
     async listUserExchangeRecords(customerId: number) {
       const result: Response<[ExchangeRecord, Souvenir][]> = await self.environment.api.get('/manager/souvenir/exchanges/list', { customer_id: customerId })
-      if (result.ok) self.setExchangeRecords(result.data.map(([r, s]) => MixedExchangeRecordModel.create({ record: r, souvenir: s })))
+      if (result.ok) self.setExchangeRecords(
+        result.data.map(([r, s]) => MixedExchangeRecordModel.create({ record: r, souvenir: s })),
+        false,
+      )
     },
-    async listDestroyRecords() {
-      const lastId = self.destroyRecords.at(-1)?.id ?? 100000
+    async listDestroyRecords(append = true) {
+      const lastId = append ? self.destroyRecords.at(-1)?.id ?? 100000 : 100000
       const result: Response<DestroyRecord[]> = await self.environment.api.get('/manager/bike/list/destroyed', { lastId })
-      if (result.ok) self.setDestroyRecords(result.data)
+      if (result.ok) self.setDestroyRecords(result.data, append)
     },
-    async listBikeBills() {
-      const lastId = self.bikeBills.at(-1)?.id ?? 100000
+    async listBikeBills(append = true) {
+      const lastId = append ? self.bikeBills.at(-1)?.id ?? 100000 : 100000
       const result: Response<BikeBill[]> = await self.environment.api.get('/manager/property/separated/list/bike', { lastId })
-      if (result.ok) self.setBikeBills(result.data)
+      if (result.ok) self.setBikeBills(result.data, append)
     },
-    async listSouvenirBills() {
-      const lastId = self.souvenirBills.at(-1)?.id ?? 100000
+    async listSouvenirBills(append = true) {
+      const lastId = append ? self.souvenirBills.at(-1)?.id ?? 100000 : 100000
       const result: Response<SouvenirBill[]> = await self.environment.api.get('/manager/property/separated/list/souvenir', { lastId })
-      if (result.ok) self.setSouvenirBills(result.data)
+      if (result.ok) self.setSouvenirBills(result.data, append)
     },
-    async listOtherBills() {
-      const lastId = self.otherBills.at(-1)?.id ?? 100000
+    async listOtherBills(append = true) {
+      const lastId = append ? self.otherBills.at(-1)?.id ?? 100000 : 100000
       const result: Response<OtherBill[]> = await self.environment.api.get('/manager/property/separated/list/other', { lastId })
-      if (result.ok) self.setOtherBills(result.data)
+      if (result.ok) self.setOtherBills(result.data, append)
     },
-    async listMasterBills() {
-      const lastId = self.masterBills.at(-1)?.id ?? 100000
+    async listMasterBills(append = true) {
+      const lastId = append ? self.masterBills.at(-1)?.id ?? 100000 : 100000
       const result: Response<ManagerBill[]> = await self.environment.api.get('/manager/property/master/list', { lastId })
-      if (result.ok) self.setMasterBills(result.data)
+      if (result.ok) self.setMasterBills(result.data, append)
     },
-    async listMyDepositRecords() {
-      const lastId = self.depositRecords.at(-1)?.id ?? 100000
+    async listMyDepositRecords(append = true) {
+      const lastId = append ? self.depositRecords.at(-1)?.id ?? 100000 : 100000
       const result: Response<DepositRecord[]> = await self.environment.api.get('/customer/property/list/deposit', { lastId })
-      if (result.ok) self.setDepositRecords(result.data)
+      if (result.ok) self.setDepositRecords(result.data, append)
     },
-    async listMyPointRecords() {
-      const lastId = self.pointRecords.at(-1)?.id ?? 100000
+    async listMyPointRecords(append = true) {
+      const lastId = append ? self.pointRecords.at(-1)?.id ?? 100000 : 100000
       const result: Response<PointRecord[]> = await self.environment.api.get('/customer/property/list/points', { lastId })
-      if (result.ok) self.setPointRecords(result.data)
+      if (result.ok) self.setPointRecords(result.data, append)
     },
-    async listSignUpRequests() {
-      const lastId = self.signUpRequests.at(-1)?.id ?? 100000
+    async listSignUpRequests(append = true) {
+      const lastId = append ? self.signUpRequests.at(-1)?.id ?? 100000 : 100000
       const result: Response<SignUpRequest[]> = await self.environment.api.get('/manager/user/request/list', { lastId })
-      if (result.ok) self.setSignUpRequests(result.data)
+      if (result.ok) self.setSignUpRequests(result.data, append)
     },
     async showMyMalfunctionRecords(rideId: number) {
       const result: Response<MalfunctionRecord[]> = await self.environment.api.get('/customer/bike/record/list/malfunction', { ride_id: rideId })
-      if (result.ok) self.setMalfunctionRecords(result.data)
+      if (result.ok) self.setMalfunctionRecords(result.data, false)
     },
-    async showMalfunctionRecords(bikeId: number) {
-      const lastId = self.malfunctionRecords.at(-1)?.id ?? 100000
-      const result: Response<MalfunctionRecord[]> = await self.environment.api.get('/maintainer/malfunction/list', { bike_id: bikeId, lastId })
-      if (result.ok) self.setMalfunctionRecords(result.data)
+    async showMalfunctionRecords(bikeId: number, malfunctionId: number, append = true) {
+      const result: Response<MalfunctionRecord[]> = await self.environment.api.get('/maintainer/malfunction/list', { bike_id: bikeId, malfunction_id: malfunctionId })
+      if (result.ok) self.setMalfunctionRecords(result.data, append)
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({

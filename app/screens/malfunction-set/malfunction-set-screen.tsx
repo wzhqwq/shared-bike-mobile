@@ -5,31 +5,25 @@ import { StackScreenProps } from "@react-navigation/stack"
 import { goBack, NavigatorParamList } from "../../navigators"
 import { BottomModal, Button, Header, Screen, Text, TextField } from "../../components"
 import { Malfunction, MalfunctionModel, useStores } from "../../models"
-import { color, spacing } from "../../theme"
+import { color } from "../../theme"
 import { Feather, MaterialIcons } from "@expo/vector-icons"
+import { LINE, INFO_LINE } from "../../global"
 
 const ROOT: ViewStyle = {
   backgroundColor: color.background,
   flex: 1,
 }
 
-// STOP! READ ME FIRST!
-// To fix the TS error below, you'll need to add the following things in your navigation config:
-// - Add `malfunctionSet: undefined` to NavigatorParamList
-// - Import your screen, and add it to the stack:
-//     `<Stack.Screen name="malfunctionSet" component={MalfunctionSetScreen} />`
-// Hint: Look for the 🔥!
-
-// REMOVE ME! ⬇️ This TS ignore will not be necessary after you've added the correct navigator param type
-// @ts-ignore
 export const MalfunctionSetScreen: FC<StackScreenProps<NavigatorParamList, "malfunctionSet">> = observer(function MalfunctionSetScreen() {
   const { entityStore } = useStores()
   const [refreshing, setRefreshing] = useState(false)
   const [show, setShow] = useState(false)
   const [malfunctions, setMalfunctions] = useState<Malfunction>(null)
-  
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const version = entityStore.malfunctionsVersion
+
   useEffect(() => {
-    if (!entityStore.malfunctions.length) entityStore.listMalfunctions()
+    if (!entityStore.malfunctions.length) refresh()
   }, [])
 
   const refresh = useCallback(() => {
@@ -54,22 +48,6 @@ export const MalfunctionSetScreen: FC<StackScreenProps<NavigatorParamList, "malf
     </Screen>
   )
 })
-
-const INFO_LINE: ViewStyle = {
-  flexDirection: 'row',
-  alignItems: 'center',
-}
-
-const LINE: ViewStyle = {
-  flexDirection: 'row',
-  paddingVertical: spacing[4],
-  paddingHorizontal: spacing[6],
-  borderBottomColor: color.line,
-  borderBottomWidth: 1,
-  alignItems: 'center',
-  justifyContent: 'space-between',
-}
-
 
 type MalfunctionProps = { malfunctionList: Malfunction[], refresh: () => void, refreshing: boolean, onModify: (s: Malfunction) => void }
 const MalfunctionView: FC<MalfunctionProps> = observer(({ malfunctionList, refresh, refreshing, onModify }) => (
@@ -135,10 +113,10 @@ const SetMalfunctionModal: FC<{ show: boolean, malfunction: Malfunction, onClose
 
   return (
     <BottomModal onClose={onClose} show={show} title={malfunction ? '修改故障名称' : '创建基本故障'} up={focused}>
-      <TextField label="故障名称" onChangeText={t => setName(t)} value={name} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
+      <TextField label="故障名称" onChangeText={t => setName(t)} value={name} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} returnKeyType='done' />
       {
         !malfunction && (
-          <TextField label="风险点数" keyboardType='number-pad' onChangeText={t => setDegree(t)} value={degree} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} placeholder='1~50的整数' />
+          <TextField label="风险点数" keyboardType='number-pad' onChangeText={t => setDegree(t)} value={degree} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} placeholder='1~50的整数' returnKeyType='done' />
         )
       }
       <Button loading={loading} onPress={submit} text={malfunction ? '修改' : '创建'} disabled={!ok} />

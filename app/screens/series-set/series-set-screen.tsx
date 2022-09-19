@@ -149,9 +149,9 @@ const SetSeriesModal: FC<{ show: boolean, series: BikeSeries, onClose: () => voi
 
   return (
     <BottomModal onClose={onClose} show={show} title={series ? '修改车型' : '创建车型'} up={focused}>
-      <TextField label="型号名称" onChangeText={t => setName(t)} value={name} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
-      <TextField label="最高骑行总里程（公里）" keyboardType='number-pad' onChangeText={t => setLimit(t)} value={limit} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
-      <TextField label="押金（元）" keyboardType='numbers-and-punctuation' onChangeText={t => setRent(t.split(/\D/).slice(0, 2).join('.'))} value={rent} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
+      <TextField label="型号名称" onChangeText={t => setName(t)} value={name} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} returnKeyType='done' />
+      <TextField label="最高骑行总里程（公里）" keyboardType='number-pad' onChangeText={t => setLimit(t)} value={limit} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} returnKeyType='done' />
+      <TextField label="押金（元）" keyboardType='numbers-and-punctuation' onChangeText={t => setRent(t.split(/\D/).slice(0, 2).join('.'))} value={rent} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} returnKeyType='done' />
       <Button loading={loading} onPress={submit} text={series ? '修改' : '创建'} disabled={!ok} />
     </BottomModal>
   )

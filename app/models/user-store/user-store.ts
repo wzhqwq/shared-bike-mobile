@@ -3,6 +3,8 @@ import global from "../../global"
 import { Response } from "../../services/api"
 import { Bike, BikeModel } from "../bike/bike"
 import { withEnvironment } from "../extensions/with-environment"
+import { HealthDecrease, HealthDecreaseModel } from "../health-decrease/health-decrease"
+import { HeatmapItem, HeatmapItemModel } from "../heatmap-item/heatmap-item"
 import { Maintainer, MaintainerModel } from "../maintainer/maintainer"
 import { Manager } from "../manager/manager"
 import { SignUpRequestModel } from "../sign-up-request/sign-up-request"
@@ -17,9 +19,14 @@ export const UserStoreModel = types
   .props({
     me: types.maybe(UserModel),
     bikeNow: types.maybe(BikeModel),
-    maintainers: types.optional(types.array(MaintainerModel), []),
     sectionIdNow: types.maybe(types.number),
-    statistic: types.maybe(StatisticModel)
+    statistic: types.maybe(StatisticModel),
+    maintainersVersion: types.optional(types.number, 0),
+    repairGraphVersion: types.optional(types.number, 0),
+    decreasesVersion: types.optional(types.number, 0),
+    maintainers: types.optional(types.array(MaintainerModel), []),
+    repairGraph: types.optional(types.array(HeatmapItemModel), []),
+    decreases: types.optional(types.array(HealthDecreaseModel), []),
   })
   .extend(withEnvironment)
   .views((self) => ({
@@ -38,6 +45,18 @@ export const UserStoreModel = types
     setSectionIdNow(id: number) {
       self.sectionIdNow = id
     },
+    setRepairGraph(g: HeatmapItem[]) {
+      self.repairGraphVersion++
+      self.repairGraph.replace(g)
+    },
+    setMaintainers(m: Maintainer[]) {
+      self.maintainersVersion++
+      self.maintainers.replace(m)
+    },
+    setDecreases(d: HealthDecrease[]) {
+      self.decreasesVersion++
+      self.decreases.replace(d)
+    }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
     async fetch() {
@@ -73,13 +92,6 @@ export const UserStoreModel = types
       }
       return result.ok
     },
-    async checkRole() {
-      const result: Response<string> = await self.environment.api.post('/auth/check_role', undefined)
-      if (result.ok) {
-        await self.environment.updateJwt(result.data)
-      }
-      return result.ok
-    },
     async registerAs(type: number, name: string, phone: string) {
       const record = SignUpRequestModel.create({ type, name, phone, id: -1 })
       const result: Response<null> = await self.environment.api.post('/auth/request_to_be', record)
@@ -110,6 +122,10 @@ export const UserStoreModel = types
         await self.environment.api.get('/maintainer/bike/find', { series_no: seriesNo })
 
       if (result.ok) {
+        if (!result.data) {
+          global.toast.show('没有找到单车', { type: 'danger' })
+          return false
+        }
         self.setBikeNow(result.data)
       }
       return result.ok
@@ -117,23 +133,7 @@ export const UserStoreModel = types
     async listMaintainersInSection(sectionId: number) {
       self.setSectionIdNow(sectionId)
       const result: Response<Maintainer[]> = await self.environment.api.get('/manager/section/maintainer/list', { section_id: sectionId })
-      if (result.ok) {
-        self.maintainers.replace(result.data)
-      }
-      return result.ok
-    },
-    async grantSectionTo(sectionId: number, maintainerId: number) {
-      const result: Response<Maintainer[]> = await self.environment.api.post('/manager/section/maintainer/grant', { section_id: sectionId, maintainer_id: maintainerId })
-      if (result.ok && self.sectionIdNow === sectionId) {
-        self.maintainers.replace(result.data)
-      }
-      return result.ok
-    },
-    async revokeSectionFrom(sectionId: number, maintainerId: number) {
-      const result: Response<Maintainer[]> = await self.environment.api.post('/manager/section/maintainer/revoke', { section_id: sectionId, maintainer_id: maintainerId })
-      if (result.ok && self.sectionIdNow === sectionId) {
-        self.maintainers.replace(result.data)
-      }
+      if (result.ok) self.setMaintainers(result.data)
       return result.ok
     },
     async getStatistics() {
@@ -143,6 +143,38 @@ export const UserStoreModel = types
       if (!billResult.ok) return false
       self.setStatistics({ ...bikeResult.data, ...billResult.data })
       return true
+    },
+    async getRepairGraph() {
+      const result: Response<HeatmapItem[]> = await self.environment.api.get('/maintainer/repair/graph', undefined)
+      if (result.ok) {
+        self.setRepairGraph(result.data)
+      }
+    },
+    async getDecreases(bikeId: number) {
+      const result: Response<HealthDecrease[]> = await self.environment.api.get('/maintainer/malfunction/list_decreases', { bike_id: bikeId })
+      if (result.ok) {
+        self.setDecreases(result.data)
+      }
+    },
+  })) // eslint-disable-line @typescript-eslint/no-unused-vars
+  .actions((self) => ({
+    async checkRole() {
+      const result: Response<string> = await self.environment.api.post('/auth/check_role', undefined)
+      if (result.ok) {
+        await self.environment.updateJwt(result.data)
+        await self.fetch()
+      }
+      return result.ok
+    },
+    async grantSectionTo(sectionId: number, maintainerId: number) {
+      const result: Response<null> = await self.environment.api.post('/manager/section/maintainer/grant', { section_id: sectionId, maintainer_id: maintainerId })
+      if (result.ok) await self.listMaintainersInSection(self.sectionIdNow)
+      return result.ok
+    },
+    async revokeSectionFrom(sectionId: number, maintainerId: number) {
+      const result: Response<null> = await self.environment.api.post('/manager/section/maintainer/revoke', { section_id: sectionId, maintainer_id: maintainerId })
+      if (result.ok) await self.listMaintainersInSection(self.sectionIdNow)
+      return result.ok
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
 

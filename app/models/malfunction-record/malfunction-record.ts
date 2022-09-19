@@ -1,4 +1,6 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
+import { ImageURISource } from "react-native"
+import { BASE_URL } from "../../services/api/api-config"
 
 /**
  * Model description here for TypeScript hints.
@@ -16,7 +18,11 @@ export const MalfunctionRecordModel = types
     image_key: types.maybeNull(types.string),
     status: types.maybe(types.number),
   })
-  .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
+  .views((self) => ({
+    get image_url(): ImageURISource {
+      return { uri: BASE_URL + '/image/show?key=' + self.image_key }
+    }
+  })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
     setStatus(status: number) {
       self.status = status

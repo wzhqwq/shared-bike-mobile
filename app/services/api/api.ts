@@ -42,9 +42,11 @@ interface AllRoutes {
   '/maintainer/bike/activate': { encrypted: string }
   '/maintainer/maintain/start': { bike_id: number }
   '/maintainer/maintain/finish': { bike_id: number, p_longitude: string, p_latitude: string }
-  '/maintainer/malfunction/list': Paginator & { bike_id: number }
+  '/maintainer/malfunction/list_decreases': { bike_id: number }
+  '/maintainer/malfunction/list': { bike_id: number, malfunction_id: number }
   '/maintainer/malfunction/handle': RepairRecord
   '/maintainer/repair/list': Paginator
+  '/maintainer/repair/graph': undefined
   '/manager/property/separated/list/bike': Paginator
   '/manager/property/separated/list/souvenir': Paginator
   '/manager/property/separated/list/other': Paginator
@@ -146,15 +148,18 @@ export class Api {
         return
       }
       const convertor = (o: any) => {
+        if (o.extended) convertor(o.extended)
         if (o.time) o.time = new Date(o.time)
         if (o.start_time) o.start_time = new Date(o.start_time)
         if (o.end_time) o.end_time = new Date(o.end_time)
+        if (o.ban_time) o.ban_time = new Date(o.ban_time)
       }
       response.data = response.data.data
+      if (!response.data) return
       if (response.data instanceof Array) {
         response.data.forEach(convertor)
       }
-      else if (response.data) {
+      else {
         convertor(response.data)
       }
     })

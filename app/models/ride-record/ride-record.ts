@@ -13,7 +13,7 @@ export const RideRecordModel = types
     start_time: types.Date,
     end_time: types.Date,
     charge: types.string,
-    points_acquired: types.number,
+    points_acquired: types.maybeNull(types.number),
   })
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars

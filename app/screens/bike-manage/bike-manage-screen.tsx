@@ -1,0 +1,298 @@
+import React, { FC, useCallback, useEffect, useRef, useState } from "react"
+import { observer } from "mobx-react-lite"
+import { Animated, Keyboard, View, ViewStyle } from "react-native"
+import { StackScreenProps } from "@react-navigation/stack"
+import { navigate, NavigatorParamList } from "../../navigators"
+import { BikeMap, BottomModal, BottomPaper, Button, Text, TextField } from "../../components"
+import { Bike, BIKE_AVAILABLE, BIKE_UNAVAILABLE, ParkingPoint, useStores } from "../../models"
+import { color, spacing } from "../../theme"
+import { MaterialIcons } from "@expo/vector-icons"
+import { LatLng, MapEvent, Marker } from "react-native-maps"
+import global from "../../global"
+import { Scanner } from "../../components/scanner/scanner"
+import { Picker } from '@react-native-picker/picker'
+
+const ROOT: ViewStyle = {
+  backgroundColor: color.background,
+  flex: 1,
+}
+
+export const BikeManageScreen: FC<StackScreenProps<NavigatorParamList, "bikeManage">> = observer(function BikeManageScreen() {
+  const { userStore } = useStores()
+
+  const [posNow, setPosNow] = useState<LatLng>(null)
+  const [posDrag, setPosDrag] = useState<LatLng>(null)
+  const [ppNow, setPPNow] = useState(null)
+  const [bikeNow, setBikeNow] = useState<Bike>(null)
+  const [showPP, setShowPP] = useState(false)
+  const [showAddBike, setShowAddBike] = useState(false)
+  const [showDrag, setShowDrag] = useState(false)
+  const [showOperateBike, setShowOperateBike] = useState(false)
+  const [showScanner, setShowScanner] = useState(false)
+  const [result, setResult] = useState('')
+  const [isFinding, setIsFinding] = useState(false)
+
+  const openPP = useCallback((pp: ParkingPoint) => {
+    setPPNow(pp)
+    setShowPP(true)
+  }, [])
+
+  const operateBike = useCallback((bike: Bike) => {
+    setBikeNow(bike)
+    setShowOperateBike(true)
+  }, [])
+
+  const addBike = useCallback(() => {
+    setPosDrag(posNow)
+    setShowDrag(true)
+    setShowAddBike(true)
+  }, [posNow])
+
+  useEffect(() => {
+    if (result) {
+      setResult('')
+      setBikeNow(null)
+      setShowScanner(false)
+      if (isFinding) {
+        (async () => {
+          if (userStore.me || await userStore.fetch()) await userStore.findBike(result)
+        })()
+      }
+    }
+  }, [result])
+
+  useEffect(() => {
+    if (userStore.bikeNow) {
+      setBikeNow(userStore.bikeNow)
+      setShowOperateBike(true)
+    }
+  }, [userStore.bikeNow])
+
+  useEffect(() => {
+    if (showOperateBike && bikeNow?.status === BIKE_UNAVAILABLE) {
+      setPosDrag(posNow)
+      setShowDrag(true)
+    }
+  }, [bikeNow, showOperateBike])
+
+  return (
+    <View style={ROOT}>
+      <BikeMap showBikes showParkingPoints showSections mode='maintainer' setPosNow={setPosNow} onParkingPress={openPP} onBikePress={operateBike} bottomButtons={(
+        <>
+          <Button text='查看维护中单车' onPress={addBike} />
+          <Button onPress={() => {
+            setShowScanner(true)
+            setIsFinding(true)
+          }}>
+            <MaterialIcons name='qr-code-scanner' size={24} color='white' />
+          </Button>
+          <Button text='注册新单车' onPress={addBike} />
+        </>
+      )}>
+        {showDrag && (<DragBike pos={posDrag} setPos={setPosDrag} />)}
+      </BikeMap>
+      <PPModal show={showPP} onClose={() => setShowPP(false)} pp={ppNow} />
+      <AddBikePaper show={showAddBike} onClose={() => setShowAddBike(false)} pos={posDrag} result={isFinding ? '' : result} openScanner={() => {
+        setShowScanner(true)
+        setIsFinding(false)
+        setShowDrag(false)
+      }} />
+      <OperateBikePaper show={showOperateBike} onClose={() => {
+        setShowOperateBike(false)
+        setShowDrag(false)
+      }} bike={bikeNow} pos={showDrag ? posDrag : null} />
+      <Scanner show={showScanner} onCancel={() => setShowScanner(false)} onResult={value => {
+        setShowScanner(false)
+        setResult(value)
+      }} />
+    </View>
+  )
+})
+
+const PAD: ViewStyle = {
+  padding: spacing[4],
+}
+
+const BIKE_DRAG: ViewStyle = {
+  padding: spacing[2],
+  borderRadius: spacing[2],
+  backgroundColor: color.primary,
+}
+
+const DragBike = ({ pos, setPos }: { pos: LatLng, setPos: (p: LatLng) => void }) => {
+  const slideAnim = useRef(new Animated.Value(1)).current
+
+  const styles = [BIKE_DRAG, { transform: [{ scale: slideAnim }] }]
+
+  const drag = useCallback(() => {
+    Animated.timing(
+      slideAnim,
+      {
+        toValue: 1.5,
+        duration: 300,
+        useNativeDriver: false,
+      }
+    ).start()
+  }, [])
+  const drop = useCallback((e: MapEvent) => {
+    setPos(e.nativeEvent.coordinate)
+    Animated.timing(
+      slideAnim,
+      {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: false,
+      }
+    ).start()
+  }, [])
+
+  return (
+    <Marker coordinate={pos} onDragStart={drag} onDragEnd={drop} draggable>
+      <View style={PAD}>
+        <Animated.View style={styles}>
+          <MaterialIcons name='pedal-bike' color='white' size={16} />
+        </Animated.View>
+      </View>
+    </Marker>
+  )
+}
+
+const LINE: ViewStyle = {
+  flexDirection: 'row',
+  alignItems: 'center',
+}
+
+const INFO_LINE: ViewStyle = {
+  ...LINE,
+  marginBottom: spacing[2],
+}
+
+const SCAN: ViewStyle = {
+  marginLeft: spacing[2],
+  marginTop: 20,
+}
+
+const INPUT: ViewStyle = {
+  flex: 1,
+}
+
+const PPModal = ({ show, onClose, pp }: { show: boolean, onClose: () => void, pp: ParkingPoint }) => (
+  <BottomModal onClose={() => {
+    onClose()
+    pp.setSelected(false)
+  }} show={show} title='停车点'>
+    {pp && (
+      <>
+        <View style={INFO_LINE}><Text preset='fieldLabel'>坐标：</Text><Text>{global.positionHuman(pp.coordinate)}</Text></View>
+        <View style={INFO_LINE}><Text preset='fieldLabel'>最低停放单车数量：</Text><Text>{pp.minimum_count}</Text></View>
+        <View style={INFO_LINE}><Text preset='fieldLabel'>停放单车数量：</Text><Text>{pp.bikes_count}</Text></View>
+      </>
+    )}
+  </BottomModal>
+)
+
+const AddBikePaper = ({ show, onClose, pos, openScanner, result }: { show: boolean, onClose: () => void, pos: LatLng, openScanner: () => void, result: string }) => {
+  const { entityStore } = useStores()
+  const [loading, setLoading] = useState(false)
+
+  const [seriesNo, setSeriesNo] = useState('')
+  const [seriesId, setSeriesId] = useState(0)
+  const [focused, setFocused] = useState(false)
+
+  useEffect(() => {
+    if (!entityStore.seriesList.length) entityStore.listSeries()
+  }, [])
+  
+  useEffect(() => {
+    if (show) {
+      setSeriesNo(result)
+      setSeriesId(0)
+    }
+    else {
+      setFocused(false)
+      Keyboard.dismiss()
+    }
+  }, [show, result])
+
+  const submit = useCallback(() => {
+    setLoading(true)
+    entityStore.registerBike(seriesId, seriesNo, pos).then(success => {
+      setLoading(false)
+      if (success) onClose()
+    })
+  }, [seriesNo, seriesId, pos])
+
+  return (
+    <BottomPaper onClose={onClose} show={show} up={focused} title='注册单车' upHeight={280}>
+      <View style={LINE}>
+        <TextField label="单车序列号" onChangeText={t => setSeriesNo(t)} value={seriesNo} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} style={INPUT} />
+        <Button style={SCAN} onPress={() => {
+          openScanner()
+          Keyboard.dismiss()
+        }}>
+          <MaterialIcons name='qr-code-scanner' size={28} color='white' />
+        </Button>
+      </View>
+      <Picker selectedValue={seriesId} onValueChange={(v) => setSeriesId(v)}>
+        {entityStore.seriesList.map(s => (
+          <Picker.Item label={s.name} value={s.id} key={s.id} />
+        ))}
+      </Picker>
+      <Button text='注册' onPress={submit} loading={loading} disabled={!seriesNo || !seriesId} />
+    </BottomPaper>
+  )
+}
+
+const GROUP: ViewStyle = {
+  flexDirection: 'row',
+  justifyContent: 'space-evenly',
+}
+
+const OperateBikePaper = observer(({ show, onClose, bike, pos }: { show: boolean, onClose: () => void, bike: Bike, pos: LatLng }) => {
+  const { entityStore } = useStores()
+
+  const maintain = useCallback(() => {
+    bike.startMaintaining().then(() => {
+      onClose()
+      bike.setSelected(false)
+    })
+  }, [bike])
+
+  const finish = useCallback(() => {
+    bike.finishMaintaining(pos).then(() => {
+      onClose()
+      bike.setSelected(false)
+    })
+  }, [bike, pos])
+
+  useEffect(() => {
+    if (!entityStore.seriesList.length) entityStore.listSeries()
+  }, [])
+
+  return (
+    <BottomPaper onClose={() => {
+      onClose()
+      bike.setSelected(false)
+    }} show={show} title={entityStore.seriesList.find(s => s.id === bike?.series_id)?.name ?? '单车'}>
+      {bike && (
+        <>
+          <View style={INFO_LINE}><Text preset='fieldLabel'>坐标：</Text><Text>{global.positionHuman(pos ?? bike.coordinate)}</Text></View>
+          <View style={INFO_LINE}><Text preset='fieldLabel'>序列号：</Text><Text>{bike.series_no}</Text></View>
+          <View style={INFO_LINE}><Text preset='fieldLabel'>健康值：</Text><Text>{bike.health}</Text></View>
+          <View style={INFO_LINE}><Text preset='fieldLabel'>总骑行里程：</Text><Text>{bike.mileage} 公里</Text></View>
+          <View style={INFO_LINE}><Text preset='fieldLabel'>维修失败次数：</Text><Text>{bike.fail_count}</Text></View>
+          <View style={GROUP}>
+            {bike.status === BIKE_AVAILABLE && (
+              <Button text='开始维护' onPress={maintain} />
+            )}
+            {bike.status === BIKE_UNAVAILABLE && (
+              <Button text='完成维护并标记位置' onPress={finish} />
+            )}
+            <Button text='故障日志' onPress={() => navigate('malfunctionHandle', { bikeId: bike.id })} />
+          </View>
+        </>
+      )}
+    </BottomPaper>
+  )
+})
+

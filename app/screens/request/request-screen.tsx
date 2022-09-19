@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect } from "react"
+import React, { FC, useCallback, useEffect, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { FlatList, ListRenderItemInfo, TextStyle, View, ViewStyle } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack"
@@ -7,6 +7,7 @@ import { Button, Header, Screen, Text } from "../../components"
 import { REQUEST_ACCEPTED, REQUEST_REJECTED, REQUEST_UNHANDLED, SignUpRequest, useStores } from "../../models"
 import { color, spacing } from "../../theme"
 import moment from "moment"
+import { LINE, INFO_LINE } from "../../global"
 
 const ROOT: ViewStyle = {
   backgroundColor: color.background,
@@ -15,40 +16,36 @@ const ROOT: ViewStyle = {
 
 export const RequestScreen: FC<StackScreenProps<NavigatorParamList, "request">> = observer(function RequestScreen() {
   const { recordStore } = useStores()
+  const [refreshing, setRefreshing] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const version = recordStore.signUpRequests
+
+  const refresh = useCallback(() => {
+    recordStore.listSignUpRequests(false).then(() => setRefreshing(false))
+  }, [])
+
+  const next = useCallback(() => {
+    recordStore.listSignUpRequests(true)
+  }, [])
 
   useEffect(() => {
-    if (!recordStore.signUpRequests.length) recordStore.listSignUpRequests()
-  }, [recordStore.signUpRequests.length])
+    if (!recordStore.signUpRequests.length) refresh()
+  }, [])
 
-  return (<RequestView requests={recordStore.signUpRequests} next={() => recordStore.listSignUpRequests()} />)
+  return (
+    <Screen style={ROOT}>
+      <Header headerText="注册请求" hasBack onLeftPress={goBack} />
+      <FlatList
+        onEndReached={next}
+        data={recordStore.signUpRequests}
+        renderItem={renderItem}
+        keyExtractor={item => item.id.toString()}
+        onRefresh={refresh}
+        refreshing={refreshing}
+      />
+    </Screen>
+  )
 })
-
-const RequestView = observer(({ requests, next }: { requests: SignUpRequest[], next: () => void }) => (
-  <Screen style={ROOT}>
-    <Header headerText="注册请求" hasBack onLeftPress={goBack} />
-    <FlatList
-      onEndReached={next}
-      data={requests}
-      renderItem={renderItem}
-      keyExtractor={item => item.id.toString()}
-    />
-  </Screen>
-))
-
-const INFO_LINE: ViewStyle = {
-  flexDirection: 'row',
-  alignItems: 'center',
-}
-
-const LINE: ViewStyle = {
-  flexDirection: 'row',
-  paddingVertical: spacing[4],
-  paddingHorizontal: spacing[6],
-  borderBottomColor: color.line,
-  borderBottomWidth: 1,
-  alignItems: 'center',
-  justifyContent: 'space-between',
-}
 
 const REJECT: ViewStyle = {
   marginTop: spacing[2],

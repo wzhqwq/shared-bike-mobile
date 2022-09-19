@@ -1,5 +1,6 @@
 import crypto from 'crypto-es'
 import { types } from 'mobx-state-tree'
+import { LatLng } from 'react-native-maps'
 import global from "../../global"
 import { BIKE_AVAILABLE, BIKE_OCCUPIED } from "../../models"
 
@@ -7,19 +8,23 @@ export class DummyBike {
   private longitude: number
   private latitude: number
   private mileage: number
-  private token = '12345678901234567890'
-  // eslint-disable-next-line no-useless-constructor
-  constructor(public seriesNo: string) {}
+  private token: string
+  constructor(public seriesNo: string) {
+    this.mileage = 0
+  }
 
-  public setPosition(longitude: number, latitude: number) {
-    this.mileage += distance(latitude, this.latitude, longitude, this.longitude)
-    this.longitude = longitude
-    this.latitude = latitude
+  public setPosition(pos: LatLng) {
+    if (this.longitude) {
+      this.mileage += distance(pos.latitude, this.latitude, pos.longitude, this.longitude)
+    }
+    this.longitude = pos.longitude
+    this.latitude = pos.latitude
   }
 
   public sendToBike(bikeId: number, type: 'unlock' | 'update' | 'lock') {
     switch (type) {
       case 'unlock':
+        this.token = new Array(20).fill(0).map(() => Math.floor(Math.random() * 10)).join('')
         return DummyBike.encrypt([this.token, bikeId.toString()])
       case 'update':
         return DummyBike.encrypt([this.token, BIKE_OCCUPIED.toString(), this.mileage.toFixed(3), this.longitude.toFixed(6), this.latitude.toFixed(6)])
@@ -54,7 +59,7 @@ export class DummyBike {
   }
 
   public static decrypt(encrypted: string) {
-    return crypto.AES.decrypt(encrypted, 'bike').toString().split('$')
+    return crypto.AES.decrypt(encrypted, 'bike').toString(crypto.enc.Utf8).split('$')
   }
 }
 
@@ -74,7 +79,7 @@ export const DummyBikeModel = types.custom<string, DummyBike>({
   }
 })
 
-function distance(lat1: number, lat2: number, lon1: number, lon2: number) {
+function distance(lat1, lat2, lon1, lon2) {
   // The math module contains a function
   // named toRadians which converts from
   // degrees to radians.

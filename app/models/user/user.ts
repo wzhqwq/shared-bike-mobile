@@ -1,4 +1,5 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
+import { ImageURISource } from "react-native"
 import { BASE_URL } from "../../services/api/api-config"
 import { Customer, CustomerModel } from "../customer/customer"
 import { MaintainerModel } from "../maintainer/maintainer"
@@ -18,9 +19,9 @@ export const UserModel = types
     extended: types.maybe(types.union(CustomerModel, MaintainerModel, ManagerModel)),
   })
   .views((self) => ({
-    get avatar_url() {
+    get avatar_url(): ImageURISource {
       if (!self.avatar_key) return userIcon
-      return BASE_URL + '/image/show?key=' + self.avatar_key
+      return { uri: BASE_URL + '/image/show?key=' + self.avatar_key }
     }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
@@ -36,7 +37,7 @@ export const MANAGER_USER = 3
 
 export const getNameIfExist = (u: User) => u.role === MAINTAINER_USER || u.role === MANAGER_USER ? `（${(u.extended as Manager).name}）` : ''
 export const getPhoneIfExist = (u: User) => u.role === MAINTAINER_USER || u.role === MANAGER_USER ? `（${(u.extended as Manager).phone}）` : ''
-export const getBanTimeIfExist = (u: User) => u.role === CUSTOMER_USER ? ((u.extended as Customer).banTimeHuman() && `（${(u.extended as Customer).banTimeHuman()}）`) : null
+export const getBanTimeIfExist = (u: User) => u.role === CUSTOMER_USER ? ((u.extended as Customer).banTimeHuman && `（${(u.extended as Customer).banTimeHuman}）`) : null
 
 export interface User extends Instance<typeof UserModel> {}
 export interface UserSnapshotOut extends SnapshotOut<typeof UserModel> {}

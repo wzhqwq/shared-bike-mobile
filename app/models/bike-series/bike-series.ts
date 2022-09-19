@@ -24,7 +24,7 @@ export const BikeSeriesModel = types
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
     async modify(name: string, mileageLimit: number, rent: string) {
-      const series = BikeSeriesModel.create({ name, rent, mileage_limit: mileageLimit, id: -1 })
+      const series = BikeSeriesModel.create({ name, rent, mileage_limit: mileageLimit, id: self.id })
       const result = await self.environment.api.post('/manager/bike/series/modify', series)
       if (result.ok) self.updateSelf(name, mileageLimit, rent)
       return result.ok

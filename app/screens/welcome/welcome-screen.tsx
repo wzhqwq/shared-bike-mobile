@@ -1,13 +1,12 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { FC, useCallback, useEffect, useRef, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { ActivityIndicator, Animated, View, ViewStyle } from "react-native"
+import { Animated, View, ViewStyle } from "react-native"
 import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack"
 import { NavigatorParamList } from "../../navigators"
 import { Button, Checkbox, Screen, Text, TextField } from "../../components"
 import { useNavigation } from "@react-navigation/native"
 import { CUSTOMER_USER, MAINTAINER_USER, MANAGER_USER, UNLINKED_USER, useStores } from "../../models"
-import global from "../../global"
 import { spacing } from "../../theme"
 import { color } from "@storybook/theming"
 
@@ -165,8 +164,8 @@ export const WelcomeScreen: FC<StackScreenProps<NavigatorParamList, "welcome">> 
               <Animated.View style={[HIDE, { opacity: fadeAnim2 }]}>
               <View style={DIVIDER} />
                 <Text text='填写个人信息表单，等待管理员审核：' />
-                <TextField label="真实姓名" autoCompleteType="name" onChangeText={t => setName(t)} value={name} />
-                <TextField label="手机号" keyboardType="phone-pad" autoCompleteType="tel" onChangeText={t => setPhone(t)} value={phone} />
+                <TextField label="真实姓名" autoCompleteType="name" onChangeText={t => setName(t)} value={name} returnKeyType='done' />
+                <TextField label="手机号" keyboardType="phone-pad" autoCompleteType="tel" onChangeText={t => setPhone(t)} value={phone} returnKeyType='done' />
                 <Button text="提交审核" style={{ alignSelf: 'center' }} loading={submitLoading} onPress={registerAs} disabled={!name || !phone} />
                 <View style={DIVIDER} />
                 <Text text='我已经提交过了：' />
