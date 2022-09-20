@@ -58,7 +58,6 @@ export const MemberScreen: FC<StackScreenProps<NavigatorParamList, "member">> = 
   const next = useCallback(() => {
     if (refreshing) return
     entityStore.listUsers(roles[type].category, true)
-    console.log('next!!!')
   }, [type])
 
   useEffect(() => refresh(), [type])
@@ -77,17 +76,16 @@ export const MemberScreen: FC<StackScreenProps<NavigatorParamList, "member">> = 
           />
         ))}
       </View>
-      {!entityStore.users.length && (<Text style={NO_DATA}>没有{roles[type].name}</Text>)}
       <FlatList
         onEndReached={next}
         data={entityStore.users}
         renderItem={renderItem}
-        keyExtractor={item => {
-          console.log(item.id)
-          return item.id.toString()
-        }}
+        keyExtractor={({ id }) => id.toString()}
         onRefresh={refresh}
         refreshing={refreshing}
+        ListEmptyComponent={(
+          <Text style={NO_DATA}>没有{roles[type].name}</Text>
+        )}  
       />
     </Screen>
   )

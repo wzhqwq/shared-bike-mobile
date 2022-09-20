@@ -106,30 +106,30 @@ const NO_DATA: TextStyle = {
 }
 
 const AllMaintainers = observer(({ users, next, refresh, refreshing }: { users: User[], next: () => void, refresh: () => void, refreshing: boolean }) => (
-  <>
-    {!users.length && (<Text style={NO_DATA}>没有可以加入这个区域的维护员</Text>)}
-    <FlatList
-      onEndReached={next}
-      data={users}
-      renderItem={userRenderItem}
-      keyExtractor={item => item.id.toString()}
-      onRefresh={refresh}
-      refreshing={refreshing}
-    />
-  </>
+  <FlatList
+    onEndReached={next}
+    data={users}
+    renderItem={userRenderItem}
+    keyExtractor={item => item.id.toString()}
+    onRefresh={refresh}
+    refreshing={refreshing}
+    ListEmptyComponent={(
+      <Text style={NO_DATA}>没有可以加入这个区域的维护员</Text>
+    )}
+  />
 ))
 
 const InSectionMaintainers = observer(({ users, refresh, refreshing }: { users: Maintainer[], refresh: () => void, refreshing: boolean }) => (
-  <>
-    {!users.length && (<Text style={NO_DATA}>这个区域内还没有维护员</Text>)}
-    <FlatList
-      data={users}
-      renderItem={maintainerRenderItem}
-      keyExtractor={item => item.user_id.toString()}
-      onRefresh={refresh}
-      refreshing={refreshing}
-    />
-  </>
+  <FlatList
+    data={users}
+    renderItem={maintainerRenderItem}
+    keyExtractor={item => item.user_id.toString()}
+    onRefresh={refresh}
+    refreshing={refreshing}
+    ListEmptyComponent={(
+      <Text style={NO_DATA}>这个区域内还没有维护员</Text>
+    )}
+  />
 ))
 
 const LINE: ViewStyle = {

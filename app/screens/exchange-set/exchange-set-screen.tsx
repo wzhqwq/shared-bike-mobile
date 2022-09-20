@@ -41,7 +41,6 @@ export const ExchangeSetScreen: FC<StackScreenProps<NavigatorParamList, "exchang
   return (
     <Screen style={ROOT}>
       <Header headerText="兑换记录" hasBack onLeftPress={goBack} />
-      {!recordStore.exchangeRecords.length && (<Text style={NO_DATA}>没有兑换记录</Text>)}
       <FlatList
         onEndReached={next}
         data={recordStore.exchangeRecords}
@@ -49,6 +48,9 @@ export const ExchangeSetScreen: FC<StackScreenProps<NavigatorParamList, "exchang
         keyExtractor={item => item.record.id.toString()}
         onRefresh={refresh}
         refreshing={refreshing}
+        ListEmptyComponent={(
+          <Text style={NO_DATA}>没有兑换记录</Text>
+        )}
       />
     </Screen>
   )

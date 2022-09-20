@@ -7,7 +7,7 @@ import { BikeMap, BottomModal, BottomPaper, Button, Text, TextField } from "../.
 import { Bike, BIKE_AVAILABLE, BIKE_UNAVAILABLE, ParkingPoint, useStores } from "../../models"
 import { color, spacing } from "../../theme"
 import { MaterialIcons } from "@expo/vector-icons"
-import { LatLng, MapEvent, Marker } from "react-native-maps"
+import { LatLng, MapEvent, Marker, Region } from "react-native-maps"
 import global from "../../global"
 import { Scanner } from "../../components/scanner/scanner"
 import { Picker } from '@react-native-picker/picker'
@@ -20,9 +20,9 @@ const ROOT: ViewStyle = {
 export const BikeManageScreen: FC<StackScreenProps<NavigatorParamList, "bikeManage">> = observer(function BikeManageScreen() {
   const { userStore } = useStores()
 
-  const [posNow, setPosNow] = useState<LatLng>(null)
+  const [posNow, setPosNow] = useState<Region>(null)
   const [posDrag, setPosDrag] = useState<LatLng>(null)
-  const [ppNow, setPPNow] = useState(null)
+  const [ppNow, setPPNow] = useState<ParkingPoint>(null)
   const [bikeNow, setBikeNow] = useState<Bike>(null)
   const [showPP, setShowPP] = useState(false)
   const [showAddBike, setShowAddBike] = useState(false)
@@ -35,12 +35,33 @@ export const BikeManageScreen: FC<StackScreenProps<NavigatorParamList, "bikeMana
   const openPP = useCallback((pp: ParkingPoint) => {
     setPPNow(pp)
     setShowPP(true)
+    pp.setSelected(true)
   }, [])
 
+  const updatePP = useCallback((pp: ParkingPoint) => {
+    if (!showPP) return
+    setPPNow(pp)
+    if (pp)
+      pp.setSelected(true)
+    else
+    setShowPP(false)
+  }, [showPP])
+
   const operateBike = useCallback((bike: Bike) => {
+    bikeNow?.setSelected(false)
+    bike.setSelected(true)
     setBikeNow(bike)
     setShowOperateBike(true)
-  }, [])
+  }, [bikeNow])
+  
+  const updateBike = useCallback((b: Bike) => {
+    if (!showOperateBike) return
+    setBikeNow(b)
+    if (b)
+      b.setSelected(true)
+    else
+      setShowOperateBike(false)
+  }, [showOperateBike])
 
   const addBike = useCallback(() => {
     setPosDrag(posNow)
@@ -77,34 +98,61 @@ export const BikeManageScreen: FC<StackScreenProps<NavigatorParamList, "bikeMana
 
   return (
     <View style={ROOT}>
-      <BikeMap showBikes showParkingPoints showSections mode='maintainer' setPosNow={setPosNow} onParkingPress={openPP} onBikePress={operateBike} bottomButtons={(
-        <>
-          <Button text='查看维护中单车' onPress={addBike} />
-          <Button onPress={() => {
-            setShowScanner(true)
-            setIsFinding(true)
-          }}>
-            <MaterialIcons name='qr-code-scanner' size={24} color='white' />
-          </Button>
-          <Button text='注册新单车' onPress={addBike} />
-        </>
-      )}>
+      <BikeMap
+        showBikes showParkingPoints showSections mode='maintainer'
+        setPosNow={setPosNow}
+        onParkingPress={openPP}
+        onParkingUpdate={updatePP}
+        onBikePress={operateBike}
+        onBikeUpdate={updateBike}
+        bottomButtons={(
+          <>
+            <Button text='查看维护中单车' onPress={addBike} />
+            <Button onPress={() => {
+              setShowScanner(true)
+              setIsFinding(true)
+            }}>
+              <MaterialIcons name='qr-code-scanner' size={24} color='white' />
+            </Button>
+            <Button text='注册新单车' onPress={addBike} />
+          </>
+        )}
+      >
         {showDrag && (<DragBike pos={posDrag} setPos={setPosDrag} />)}
       </BikeMap>
       <PPModal show={showPP} onClose={() => setShowPP(false)} pp={ppNow} />
-      <AddBikePaper show={showAddBike} onClose={() => setShowAddBike(false)} pos={posDrag} result={isFinding ? '' : result} openScanner={() => {
-        setShowScanner(true)
-        setIsFinding(false)
-        setShowDrag(false)
-      }} />
-      <OperateBikePaper show={showOperateBike} onClose={() => {
-        setShowOperateBike(false)
-        setShowDrag(false)
-      }} bike={bikeNow} pos={showDrag ? posDrag : null} />
-      <Scanner show={showScanner} onCancel={() => setShowScanner(false)} onResult={value => {
-        setShowScanner(false)
-        setResult(value)
-      }} />
+      <AddBikePaper
+        show={showAddBike}
+        onClose={() => {
+          setShowAddBike(false)
+          setShowDrag(false)
+        }}
+        pos={posDrag}
+        result={isFinding ? '' : result}
+        openScanner={() => {
+          setShowScanner(true)
+          setIsFinding(false)
+          setShowDrag(false)
+        }}
+      />
+      <OperateBikePaper
+        show={showOperateBike}
+        onClose={() => {
+          setShowOperateBike(false)
+          setShowDrag(false)
+          bikeNow.setSelected(false)
+        }}
+        bike={bikeNow}
+        pos={showDrag ? posDrag : null}
+      />
+      <Scanner
+        show={showScanner}
+        onCancel={() => setShowScanner(false)}
+        onResult={value => {
+          setShowScanner(false)
+          setResult(value)
+        }}
+      />
     </View>
   )
 })
@@ -288,7 +336,7 @@ const OperateBikePaper = observer(({ show, onClose, bike, pos }: { show: boolean
             {bike.status === BIKE_UNAVAILABLE && (
               <Button text='完成维护并标记位置' onPress={finish} />
             )}
-            <Button text='故障日志' onPress={() => navigate('malfunctionHandle', { bikeId: bike.id })} />
+            <Button text='故障列表' onPress={() => navigate('bikeMalfunction', { bikeId: bike.id })} />
           </View>
         </>
       )}

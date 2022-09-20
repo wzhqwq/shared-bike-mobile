@@ -41,7 +41,6 @@ export const RechargeSetScreen: FC<StackScreenProps<NavigatorParamList, "recharg
   return (
     <Screen style={ROOT}>
       <Header headerText="充值记录" hasBack rightIcon={<MaterialIcons name='add' size={24} />} onLeftPress={goBack} onRightPress={add} />
-      {!recordStore.rechargeRecords.length && (<Text style={NO_DATA}>没有充值记录</Text>)}
       <FlatList
         onEndReached={next}
         data={recordStore.rechargeRecords}
@@ -49,6 +48,9 @@ export const RechargeSetScreen: FC<StackScreenProps<NavigatorParamList, "recharg
         keyExtractor={item => item.id.toString()}
         onRefresh={refresh}
         refreshing={refreshing}
+        ListEmptyComponent={(
+          <Text style={NO_DATA}>没有充值记录</Text>
+        )}  
       />
       <AddRechargeRecordModal show={show} onClose={() => setShow(false)} />
     </Screen>

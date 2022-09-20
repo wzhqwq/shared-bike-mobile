@@ -1,5 +1,5 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
-import { LatLng } from "react-native-maps"
+import { LatLng, Region } from "react-native-maps"
 
 /**
  * Model description here for TypeScript hints.
@@ -29,6 +29,12 @@ export const SectionModel = types
         longitude: (parseFloat(self.tr_longitude) + parseFloat(self.bl_longitude)) / 2,
       }
     },
+    get delta(): Omit<Region, keyof LatLng> {
+      return {
+        latitudeDelta: Math.abs(parseFloat(self.tr_latitude) - parseFloat(self.bl_latitude)) * 0.95,
+        longitudeDelta: Math.abs(parseFloat(self.tr_longitude) - parseFloat(self.bl_longitude)) * 0.95,
+      }
+    }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
 

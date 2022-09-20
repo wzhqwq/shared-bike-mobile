@@ -35,7 +35,6 @@ export const PointSetScreen: FC<StackScreenProps<NavigatorParamList, "pointSet">
   return (
     <Screen style={ROOT}>
       <Header headerText="积分记录" hasBack onLeftPress={goBack} />
-      {!recordStore.pointRecords.length && (<Text style={NO_DATA}>没有积分变化记录</Text>)}
       <FlatList
         onEndReached={next}
         data={recordStore.pointRecords}
@@ -43,6 +42,9 @@ export const PointSetScreen: FC<StackScreenProps<NavigatorParamList, "pointSet">
         keyExtractor={item => item.id.toString()}
         onRefresh={refresh}
         refreshing={refreshing}
+        ListEmptyComponent={(
+          <Text style={NO_DATA}>没有积分变化记录</Text>
+        )}  
       />
     </Screen>
   )

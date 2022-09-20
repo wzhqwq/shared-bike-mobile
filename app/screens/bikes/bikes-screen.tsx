@@ -69,7 +69,6 @@ export const BikesScreen: FC<StackScreenProps<NavigatorParamList, "bikes">> = ob
           />
         ))}
       </View>
-      {!entityStore.bikes.length && (<Text style={NO_DATA}>没有符合{filters[type].name}条件的单车</Text>)}
       <FlatList
         onEndReached={next}
         data={entityStore.bikes}
@@ -77,6 +76,9 @@ export const BikesScreen: FC<StackScreenProps<NavigatorParamList, "bikes">> = ob
         keyExtractor={item => item.id.toString()}
         onRefresh={refresh}
         refreshing={refreshing}
+        ListEmptyComponent={(
+          <Text style={NO_DATA}>没有符合{filters[type].name}条件的单车</Text>
+        )}
       />
     </Screen>
   )

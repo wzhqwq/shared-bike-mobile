@@ -4,8 +4,8 @@ import { observer } from "mobx-react-lite"
 import { color, spacing } from "../../theme"
 import { Bike, ParkingPoint, Section, useStores } from "../../models"
 import MapView, { LatLng, Marker, Polygon, Region } from "react-native-maps"
-import * as Location from 'expo-location'
-import global from "../../global"
+// import * as Location from 'expo-location'
+// import global from "../../global"
 import { FontAwesome5, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons"
 import { Button } from "../button/button"
 import { LinearGradient } from "expo-linear-gradient"
@@ -20,18 +20,18 @@ const MAP: ViewStyle = {
   flex: 1,
 }
 
-const ME: ViewStyle = {
-  width: 20,
-  height: 20,
-  borderRadius: 10,
-  backgroundColor: color.primary,
-  borderColor: 'white',
-  borderWidth: 3,
-  shadowColor: '#000',
-  shadowRadius: 2,
-  shadowOpacity: 0.3,
-  shadowOffset: { width: -0.5, height: 0.5 },
-}
+// const ME: ViewStyle = {
+//   width: 20,
+//   height: 20,
+//   borderRadius: 10,
+//   backgroundColor: color.primary,
+//   borderColor: 'white',
+//   borderWidth: 3,
+//   shadowColor: '#000',
+//   shadowRadius: 2,
+//   shadowOpacity: 0.3,
+//   shadowOffset: { width: -0.5, height: 0.5 },
+// }
 
 export type BikeMapProps = {
   /**
@@ -43,7 +43,7 @@ export type BikeMapProps = {
   showParkingPoints?: boolean
   mode: 'customer' | 'maintainer' | 'manager'
   children?: JSX.Element | JSX.Element[]
-  setPosNow?: (p: LatLng) => void
+  setPosNow?: (p: Region) => void
   onParkingPress?: (pp: ParkingPoint) => void
   onSectionPress?: (section: Section) => void
   onBikePress?: (bike: Bike) => void
@@ -80,7 +80,7 @@ const GROUP: ViewStyle = {
 
 export const BikeMap = observer(function BikeMap(props: BikeMapProps) {
   const { entityStore } = useStores()
-  const [region, setRegion] = useState({ latitude: 0, longitude: 0, latitudeDelta: 1, longitudeDelta: 1 })
+  const [region, setRegion] = useState<Region>({ latitude: 0, longitude: 0, latitudeDelta: 1, longitudeDelta: 1 })
   const [refreshing, setRefreshing] = useState(false)
 
   const refresh = useCallback(() => {
@@ -183,7 +183,7 @@ export const BikeMap = observer(function BikeMap(props: BikeMapProps) {
 
 type ViewProps = {
   region: Region
-  setRegion: (r: Region) => void
+  setRegion: (r: Region | ((r: Region) => Region)) => void
   sectionId: number
 } & BikeMapProps
 
@@ -200,9 +200,12 @@ const BikeMapView: FC<ViewProps> = observer(({ style, showBikes, showSections, s
 
   const [ready, setReady] = useState(false)
   const [pinOpen, setPinOpen] = useState(true)
-  const [myPos, setMyPos] = useState({ latitude: 0, longitude: 0 })
+  // const [myPos, setMyPos] = useState({ latitude: 0, longitude: 0 })
   const regionRef = useRef(region)
   const timer = useRef(0)
+  const ppPressRef = useRef<(pp: ParkingPoint) => void>(null)
+  const bikePressRef = useRef<(b: Bike) => void>(null)
+  const sectionPressRef = useRef<(section: Section) => void>(null)
 
   const [selectedBikeId, setSelectedBikeId] = useState(0)
   const [selectedParkingId, setSelectedParkingId] = useState(0)
@@ -252,7 +255,10 @@ const BikeMapView: FC<ViewProps> = observer(({ style, showBikes, showSections, s
     entityStore.bikes.map(b => (
       <BikeInMap bike={b} key={b.id} onPress={() => {
         setSelectedBikeId(b.id)
-        onBikePress?.(b)
+        if (bikePressRef.current) {
+          bikePressRef.current(b)
+          setRegion(r => ({ ...r, ...b.coordinate }))
+        }
       }} />
     )),
   [entityStore.bikesVersion])
@@ -266,7 +272,10 @@ const BikeMapView: FC<ViewProps> = observer(({ style, showBikes, showSections, s
         fillColor={mode === 'maintainer' && s.id !== sectionId ? '#9993' : color.primaryTransparent }
         onPress={() => {
           setSelectedSectionId(s.id)
-          onSectionPress?.(s)
+          if (sectionPressRef.current) {
+            sectionPressRef.current(s)
+            setRegion(() => ({ ...s.center, ...s.delta }))
+          }
         }}
       />
     ))
@@ -276,7 +285,10 @@ const BikeMapView: FC<ViewProps> = observer(({ style, showBikes, showSections, s
     entityStore.parkingPoints.map(pp => (
       <PPInMap pp={pp} key={pp.id} onPress={() => {
         setSelectedParkingId(pp.id)
-        onParkingPress?.(pp)
+        if (ppPressRef.current) {
+          ppPressRef.current(pp)
+          setRegion(r => ({ ...r, ...pp.coordinate }))
+        }
       }} />
     ))
   , [entityStore.parkingPointsVersion])
@@ -297,13 +309,23 @@ const BikeMapView: FC<ViewProps> = observer(({ style, showBikes, showSections, s
     }
   }, [userStore.bikeNow])
 
+  useEffect(() => {
+    bikePressRef.current = onBikePress
+  }, [onBikePress])
+  useEffect(() => {
+    ppPressRef.current = onParkingPress
+  }, [onParkingPress])
+  useEffect(() => {
+    sectionPressRef.current = onSectionPress
+  }, [onSectionPress])
+
   return (
     <View style={styles}>
       {ready ? (
         <MapView region={region} onRegionChange={onRegionChange} style={MAP}>
-          <Marker coordinate={myPos}>
+          {/* <Marker coordinate={myPos}>
             <View style={ME}></View>
-          </Marker>
+          </Marker> */}
           {showSections && sectionPolygons}
           {showBikes && bikeMarkers}
           {showParkingPoints && parkingPointMarks}

@@ -17,7 +17,6 @@ import { initFonts } from "./theme/fonts" // expo
 import * as storage from "./utils/storage"
 import { AppNavigator, useNavigationPersistence } from "./navigators"
 import { RootStore, RootStoreProvider, setupRootStore } from "./models"
-import { ToggleStorybook } from "../storybook/toggle-storybook"
 import { ErrorBoundary } from "./screens/error/error-boundary"
 import ToastContainer from "react-native-toast-notifications"
 import global from './global'
@@ -57,22 +56,20 @@ function App() {
 
   // otherwise, we're ready to render the app
   return (
-    <ToggleStorybook>
-      <RootStoreProvider value={rootStore}>
-        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-          <ErrorBoundary catchErrors={"always"}>
-            <AppNavigator
-              initialState={initialNavigationState}
-              onStateChange={onNavigationStateChange}
-            />
-            <ToastContainer
-              offsetBottom={100}
-              ref={ref => { global.toast = ref }}
-            />
-          </ErrorBoundary>
-        </SafeAreaProvider>
-      </RootStoreProvider>
-    </ToggleStorybook>
+    <RootStoreProvider value={rootStore}>
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <ErrorBoundary catchErrors={"always"}>
+          <AppNavigator
+            initialState={initialNavigationState}
+            onStateChange={onNavigationStateChange}
+          />
+          <ToastContainer
+            offsetBottom={100}
+            ref={ref => { global.toast = ref }}
+          />
+        </ErrorBoundary>
+      </SafeAreaProvider>
+    </RootStoreProvider>
   )
 }
 

@@ -35,7 +35,6 @@ export const DepositSetScreen: FC<StackScreenProps<NavigatorParamList, "depositS
   return (
     <Screen style={ROOT}>
       <Header headerText="押金记录" hasBack onLeftPress={goBack} />
-      {!recordStore.depositRecords.length && (<Text style={NO_DATA}>没有押金变化记录</Text>)}
       <FlatList
         onEndReached={next}
         data={recordStore.depositRecords}
@@ -43,6 +42,9 @@ export const DepositSetScreen: FC<StackScreenProps<NavigatorParamList, "depositS
         keyExtractor={item => item.id.toString()}
         onRefresh={refresh}
         refreshing={refreshing}
+        ListEmptyComponent={(
+          <Text style={NO_DATA}>没有押金变化记录</Text>
+        )}
       />
     </Screen>
   )

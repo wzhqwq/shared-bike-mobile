@@ -182,7 +182,7 @@ const MaintainerInfoGroup = observer(({ maintainer }: { maintainer: Maintainer }
         values={userStore.repairGraph}
         width={330}
         height={200}
-        tooltipDataAttrs={v => ({ width: 20, height: 10 })}
+        tooltipDataAttrs={null}
         chartConfig={{ style: {}, color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, backgroundColor: color.transparent }}
         endDate={new Date()}
         numDays={20}

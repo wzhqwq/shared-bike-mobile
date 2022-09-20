@@ -51,23 +51,19 @@ export const MalfunctionHandleScreen: FC<StackScreenProps<NavigatorParamList, "m
   return (
     <Screen style={ROOT}>
       <Header headerText="故障处理" hasBack onLeftPress={goBack} />
-      {!recordStore.malfunctionRecords.length && (<Text style={NO_DATA}>没有未解决的故障记录</Text>)}
       <FlatList
         data={recordStore.malfunctionRecords}
         renderItem={renderItem}
         keyExtractor={item => item.id.toString()}
         onRefresh={refresh}
         refreshing={refreshing}
+        ListEmptyComponent={(
+          <Text style={NO_DATA}>没有未解决的故障记录</Text>
+        )}
       />
     </Screen>
   )
 })
-
-const BLOCK: ViewStyle = {
-  backgroundColor: color.backgroundDarker,
-  borderRadius: spacing[2],
-  padding: spacing[2],
-}
 
 const IMAGE: ImageStyle = {
   resizeMode: 'contain',
@@ -77,7 +73,7 @@ const IMAGE: ImageStyle = {
 }
 
 const renderItem = ({ item }: ListRenderItemInfo<MalfunctionRecord>) => (
-  <View style={BLOCK}>
+  <View>
     <View style={INFO_LINE}>
       <Text preset='fieldLabel'>故障程度：</Text>
       <Text>{item.degree}</Text>

@@ -38,11 +38,21 @@ export const RideScreen: FC<StackScreenProps<NavigatorParamList, "ride">> = obse
   const [recordId, setRecordId] = useState(0)
 
   const operateBike = useCallback((bike: Bike) => {
+    bikeNow?.setSelected(false)
+    bike.setSelected(true)
     setBikeNow(bike)
     setShowOperateBike(true)
-    bike.setSelected(true)
-  }, [])
+  }, [bikeNow])
   
+  const updateBike = useCallback((b: Bike) => {
+    if (started || !showOperateBike) return
+    setBikeNow(b)
+    if (b)
+      b.setSelected(true)
+    else
+      setShowOperateBike(false)
+  }, [started, showOperateBike])
+
   const searchBike = useCallback(value => {
     setShowScanner(false);
     (async () => {
@@ -79,18 +89,11 @@ export const RideScreen: FC<StackScreenProps<NavigatorParamList, "ride">> = obse
     bikeNow.startCommunication()
     bikeNow.unlockBike(bikeNow.coordinate).then(success => {
       if (success) {
-        setStarted(true)
         setPosDrag(bikeNow.coordinate)
+        setStarted(true)
       }
     })
   }, [bikeNow])
-
-  const updateBike = useCallback((b: Bike) => {
-    if (started || !showOperateBike) return
-    setBikeNow(b)
-    b?.setSelected(true)
-    if (!b) setShowOperateBike(false)
-  }, [started, showOperateBike])
 
   useEffect(() => {
     if (!entityStore.seriesList.length) entityStore.listSeries()
@@ -132,11 +135,16 @@ export const RideScreen: FC<StackScreenProps<NavigatorParamList, "ride">> = obse
       >
         {started && (<DragBike pos={posDrag} setPos={setPosDrag} />)}
       </BikeMap>
-      <BottomPaper hideClose={started} onClose={() => {
-        setShowOperateBike(false)
-        bikeNow.setSelected(false)
-        setEnded(false)
-      }} show={showOperateBike} title={entityStore.seriesList.find(s => s.id === bikeNow?.series_id)?.name ?? '单车'}>
+      <BottomPaper
+        hideClose={started}
+        onClose={() => {
+          setShowOperateBike(false)
+          bikeNow.setSelected(false)
+          setEnded(false)
+        }}
+        show={showOperateBike}
+        title={entityStore.seriesList.find(s => s.id === bikeNow?.series_id)?.name ?? '单车'}
+      >
         {bikeNow && (
           (started || ended) ? (
             <>

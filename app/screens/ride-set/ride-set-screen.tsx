@@ -35,7 +35,6 @@ export const RideSetScreen: FC<StackScreenProps<NavigatorParamList, "rideSet">> 
   return (
     <Screen style={ROOT}>
       <Header headerText="骑行记录" hasBack onLeftPress={goBack} />
-      {!recordStore.rideRecords.length && (<Text style={NO_DATA}>没有骑行记录</Text>)}
       <FlatList
         onEndReached={next}
         data={recordStore.rideRecords}
@@ -43,6 +42,9 @@ export const RideSetScreen: FC<StackScreenProps<NavigatorParamList, "rideSet">> 
         keyExtractor={item => item.id.toString()}
         onRefresh={refresh}
         refreshing={refreshing}
+        ListEmptyComponent={(
+          <Text style={NO_DATA}>没有骑行记录</Text>
+        )}  
       />
     </Screen>
   )
