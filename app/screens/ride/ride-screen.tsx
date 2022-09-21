@@ -3,9 +3,9 @@ import { observer } from "mobx-react-lite"
 import { Animated, TextStyle, View, ViewStyle } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack"
 import { navigate, NavigatorParamList } from "../../navigators"
-import { BikeMap, BottomModal, BottomPaper, Button, Text } from "../../components"
+import { BikeMap, BottomPaper, Button, Text } from "../../components"
 // import { useNavigation } from "@react-navigation/native"
-import { Bike, BIKE_AVAILABLE, useStores } from "../../models"
+import { Bike, useStores } from "../../models"
 import { color, spacing } from "../../theme"
 import { Scanner } from "../../components/scanner/scanner"
 import { MaterialIcons } from "@expo/vector-icons"
@@ -22,6 +22,11 @@ const WHITE: TextStyle = {
   marginLeft: spacing[2],
 }
 
+const STANDBY = 0
+const RIDING = 1
+const LOCKED = 2
+const REPORTED = 3
+
 export const RideScreen: FC<StackScreenProps<NavigatorParamList, "ride">> = observer(function RideScreen() {
   // Pull in one of our MST stores
   const { userStore, entityStore } = useStores()
@@ -32,8 +37,7 @@ export const RideScreen: FC<StackScreenProps<NavigatorParamList, "ride">> = obse
 
   const [cost, setCost] = useState('0.00')
   const [time, setTime] = useState('0:00')
-  const [started, setStarted] = useState(false)
-  const [ended, setEnded] = useState(false)
+  const [status, setStatus] = useState(STANDBY)
   const posRef = useRef(posDrag)
   const [recordId, setRecordId] = useState(0)
 
@@ -45,13 +49,13 @@ export const RideScreen: FC<StackScreenProps<NavigatorParamList, "ride">> = obse
   }, [bikeNow])
   
   const updateBike = useCallback((b: Bike) => {
-    if (started || !showOperateBike) return
+    if (status === RIDING || !showOperateBike) return
     setBikeNow(b)
     if (b)
       b.setSelected(true)
     else
       setShowOperateBike(false)
-  }, [started, showOperateBike])
+  }, [status, showOperateBike])
 
   const searchBike = useCallback(value => {
     setShowScanner(false);
@@ -72,8 +76,7 @@ export const RideScreen: FC<StackScreenProps<NavigatorParamList, "ride">> = obse
       setTime(result[0])
       setCost(result[1])
       setRecordId(parseInt(result[2]))
-      setStarted(false)
-      setEnded(true)
+      setStatus(LOCKED)
     })
   }, [bikeNow])
 
@@ -90,7 +93,7 @@ export const RideScreen: FC<StackScreenProps<NavigatorParamList, "ride">> = obse
     bikeNow.unlockBike(bikeNow.coordinate).then(success => {
       if (success) {
         setPosDrag(bikeNow.coordinate)
-        setStarted(true)
+        setStatus(RIDING)
       }
     })
   }, [bikeNow])
@@ -100,27 +103,32 @@ export const RideScreen: FC<StackScreenProps<NavigatorParamList, "ride">> = obse
   }, [])
 
   useEffect(() => {
-    if (started) {
+    if (status === RIDING) {
       posRef.current = posDrag
       bikeNow.dummy.setPosition(posRef.current)
-      update()
     }
   }, [posDrag])
 
   useEffect(() => {
-    if (bikeNow && started) {
-      const t = window.setInterval(update, 2000)
+    if (bikeNow && status === RIDING) {
+      const t = window.setInterval(update, 1000)
       return () => {
         window.clearInterval(t)
       }
     }
     return null
-  }, [started])
+  }, [status])
+
+  useEffect(() => {
+    if (userStore.pointsAcquired) {
+      setStatus(REPORTED)
+    }
+  }, [userStore.pointsAcquired])
 
   return (
     <View style={ROOT}>
       <BikeMap
-        showBikes={!started}
+        showBikes={status !== RIDING}
         showParkingPoints
         showSections={false}
         mode='customer'
@@ -133,20 +141,25 @@ export const RideScreen: FC<StackScreenProps<NavigatorParamList, "ride">> = obse
           </Button>
         )}
       >
-        {started && (<DragBike pos={posDrag} setPos={setPosDrag} />)}
+        {status === RIDING && (<DragBike pos={posDrag} setPos={setPosDrag} />)}
       </BikeMap>
       <BottomPaper
-        hideClose={started}
+        hideClose={status === RIDING}
         onClose={() => {
           setShowOperateBike(false)
           bikeNow.setSelected(false)
-          setEnded(false)
+          setStatus(STANDBY)
         }}
         show={showOperateBike}
-        title={entityStore.seriesList.find(s => s.id === bikeNow?.series_id)?.name ?? '单车'}
+        title={[
+          entityStore.seriesList.find(s => s.id === bikeNow?.series_id)?.name ?? '单车',
+          '骑行中',
+          '骑行结束',
+          '骑行结束',
+        ][status]}
       >
         {bikeNow && (
-          (started || ended) ? (
+          (status !== STANDBY) ? (
             <>
               <View style={INFO_GROUP}>
                 <View style={INFO_GROUP_ITEM}>
@@ -158,8 +171,9 @@ export const RideScreen: FC<StackScreenProps<NavigatorParamList, "ride">> = obse
                   <Text preset='header' text={cost} />
                 </View>
               </View>
-              {started && (<Button text='关锁' onPress={lock} />)}
-              {ended && (<Button text='上报故障' onPress={() => navigate('reportMalfunction', { rideId: recordId })} />)}
+              {status === RIDING && (<Button text='关锁' onPress={lock} />)}
+              {status === LOCKED && (<Button text='上报故障' onPress={() => navigate('reportMalfunction', { rideId: recordId })} />)}
+              {status === REPORTED && (<Text>获得积分：{userStore.pointsAcquired}</Text>)}
             </>
           ) : (
             <>
@@ -238,8 +252,7 @@ const DragBike = ({ pos, setPos }: { pos: LatLng, setPos: (p: LatLng) => void })
 const INFO_GROUP: ViewStyle = {
   alignItems: 'center',
   flexDirection: 'row',
-  marginHorizontal: -spacing[3],
-  paddingTop: spacing[4],
+  paddingVertical: spacing[3],
 }
 
 const INFO_GROUP_ITEM: ViewStyle = {

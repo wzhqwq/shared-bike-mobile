@@ -112,17 +112,13 @@ export const EntityStoreModel = types
       if (result.ok) self.setBikes(result.data)
     },
     async listBikesToMove() {
-      const result: Response<{ lacks: number[], solution?: number[] }> = await self.environment.api.get('/maintainer/bike/list_to_move', { section_id: self.sectionIdNow })
+      const result: Response<number[]> = await self.environment.api.get('/maintainer/bike/list_to_move', { section_id: self.sectionIdNow })
       if (result.ok) {
-        const { lacks, solution } = result.data
-        if (solution) {
+        if (result.data) {
           self.bikes.forEach(b => {
-            b.setHighlighted(solution.includes(b.id))
+            b.setHighlighted(result.data.includes(b.id))
           })
         }
-        self.parkingPoints.forEach(p => {
-          p.setLackOfBike(lacks.includes(p.id))
-        })
       }
     },
     async listBikesAround(longitude: string, latitude: string) {

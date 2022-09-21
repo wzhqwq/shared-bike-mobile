@@ -1,6 +1,6 @@
-import React, { FC, useCallback, useEffect, useRef, useState } from "react"
+import React, { createContext, FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { Animated, Keyboard, View, ViewStyle } from "react-native"
+import { Animated, FlatList, Keyboard, ListRenderItemInfo, TouchableHighlight, View, ViewStyle } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack"
 import { navigate, NavigatorParamList } from "../../navigators"
 import { BikeMap, BottomModal, BottomPaper, Button, Text, TextField } from "../../components"
@@ -8,7 +8,7 @@ import { Bike, BIKE_AVAILABLE, BIKE_UNAVAILABLE, ParkingPoint, useStores } from 
 import { color, spacing } from "../../theme"
 import { MaterialIcons } from "@expo/vector-icons"
 import { LatLng, MapEvent, Marker, Region } from "react-native-maps"
-import global from "../../global"
+import global, { LINE, NO_DATA } from "../../global"
 import { Scanner } from "../../components/scanner/scanner"
 import { Picker } from '@react-native-picker/picker'
 
@@ -17,17 +17,23 @@ const ROOT: ViewStyle = {
   flex: 1,
 }
 
+const OperateBikeContext = createContext<(b: Bike) => void>(null)
+
 export const BikeManageScreen: FC<StackScreenProps<NavigatorParamList, "bikeManage">> = observer(function BikeManageScreen() {
   const { userStore } = useStores()
 
   const [posNow, setPosNow] = useState<Region>(null)
   const [posDrag, setPosDrag] = useState<LatLng>(null)
+  const [showDrag, setShowDrag] = useState(false)
+
   const [ppNow, setPPNow] = useState<ParkingPoint>(null)
   const [bikeNow, setBikeNow] = useState<Bike>(null)
+
   const [showPP, setShowPP] = useState(false)
   const [showAddBike, setShowAddBike] = useState(false)
-  const [showDrag, setShowDrag] = useState(false)
   const [showOperateBike, setShowOperateBike] = useState(false)
+  const [showListBike, setShowListBike] = useState(false)
+
   const [showScanner, setShowScanner] = useState(false)
   const [result, setResult] = useState('')
   const [isFinding, setIsFinding] = useState(false)
@@ -107,7 +113,7 @@ export const BikeManageScreen: FC<StackScreenProps<NavigatorParamList, "bikeMana
         onBikeUpdate={updateBike}
         bottomButtons={(
           <>
-            <Button text='查看维护中单车' onPress={addBike} />
+            <Button text='查看维护中单车' onPress={() => setShowListBike(true)} />
             <Button onPress={() => {
               setShowScanner(true)
               setIsFinding(true)
@@ -135,6 +141,9 @@ export const BikeManageScreen: FC<StackScreenProps<NavigatorParamList, "bikeMana
           setShowDrag(false)
         }}
       />
+      <OperateBikeContext.Provider value={operateBike}>
+        <BikeListPaper show={showListBike} onClose={() => setShowListBike(false)} covered={showOperateBike} />
+      </OperateBikeContext.Provider>
       <OperateBikePaper
         show={showOperateBike}
         onClose={() => {
@@ -205,13 +214,13 @@ const DragBike = ({ pos, setPos }: { pos: LatLng, setPos: (p: LatLng) => void })
   )
 }
 
-const LINE: ViewStyle = {
+const FORM_LINE: ViewStyle = {
   flexDirection: 'row',
   alignItems: 'center',
 }
 
 const INFO_LINE: ViewStyle = {
-  ...LINE,
+  ...FORM_LINE,
   marginBottom: spacing[2],
 }
 
@@ -272,7 +281,7 @@ const AddBikePaper = ({ show, onClose, pos, openScanner, result }: { show: boole
 
   return (
     <BottomPaper onClose={onClose} show={show} up={focused} title='注册单车' upHeight={280}>
-      <View style={LINE}>
+      <View style={FORM_LINE}>
         <TextField label="单车序列号" onChangeText={t => setSeriesNo(t)} value={seriesNo} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} style={INPUT} />
         <Button style={SCAN} onPress={() => {
           openScanner()
@@ -318,10 +327,7 @@ const OperateBikePaper = observer(({ show, onClose, bike, pos }: { show: boolean
   }, [])
 
   return (
-    <BottomPaper onClose={() => {
-      onClose()
-      bike.setSelected(false)
-    }} show={show} title={entityStore.seriesList.find(s => s.id === bike?.series_id)?.name ?? '单车'}>
+    <BottomPaper onClose={onClose} show={show} title={entityStore.seriesList.find(s => s.id === bike?.series_id)?.name ?? '单车'}>
       {bike && (
         <>
           <View style={INFO_LINE}><Text preset='fieldLabel'>坐标：</Text><Text>{global.positionHuman(pos ?? bike.coordinate)}</Text></View>
@@ -344,3 +350,58 @@ const OperateBikePaper = observer(({ show, onClose, bike, pos }: { show: boolean
   )
 })
 
+const LIST: ViewStyle = {
+  height: 300,
+  marginHorizontal: -spacing[4],
+}
+
+const BikeListPaper = observer(({ show, onClose, covered }: { show: boolean, onClose: () => void, covered: boolean }) => {
+  const { entityStore } = useStores()
+
+  const [refreshing, setRefreshing] = useState(false)
+  const bikes = useMemo(() => entityStore.bikes.filter(b => b.status === BIKE_UNAVAILABLE), [entityStore.bikesVersion])
+
+  const refresh = useCallback(() => {
+    entityStore.listBikesInSection().then(() => setRefreshing(false))
+  }, [])
+
+  return (
+    <BottomPaper onClose={onClose} show={show} title='单车列表' level={covered ? 1 : 0}>
+      <FlatList
+        data={bikes}
+        renderItem={renderItem}
+        keyExtractor={item => item.id.toString()}
+        onRefresh={refresh}
+        refreshing={refreshing}
+        style={LIST}
+        ListEmptyComponent={(
+          <Text style={NO_DATA}>没有维护中的单车</Text>
+        )}
+      />
+    </BottomPaper>
+  )
+})
+
+const renderItem = ({ item }: ListRenderItemInfo<Bike>) => (
+  <OperateBikeContext.Consumer>
+    {
+      show => (
+        <TouchableHighlight activeOpacity={0.7} underlayColor='#FFF' onPress={() => show(item)}>
+          <View style={LINE}>
+            <View>
+              <View style={INFO_LINE}>
+                <Text preset='fieldLabel'>序列号：</Text>
+                <Text>{item.series_no}</Text>
+              </View>
+              <View style={INFO_LINE}>
+                <Text preset='fieldLabel'>健康值：</Text>
+                <Text>{item.health}</Text>
+              </View>
+            </View>
+            <MaterialIcons name='chevron-right' size={24} />
+          </View>
+        </TouchableHighlight>
+      )
+    }
+  </OperateBikeContext.Consumer>
+)

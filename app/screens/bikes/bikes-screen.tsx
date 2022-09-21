@@ -7,7 +7,7 @@ import { Button, Header, Screen, Text } from "../../components"
 import { useStores, Bike } from "../../models"
 import { color, spacing } from "../../theme"
 import { MaterialIcons } from "@expo/vector-icons"
-import { NO_DATA } from "../../global"
+import { INFO_LINE, LINE, NO_DATA } from "../../global"
 
 const ROOT: ViewStyle = {
   backgroundColor: color.background,
@@ -83,21 +83,6 @@ export const BikesScreen: FC<StackScreenProps<NavigatorParamList, "bikes">> = ob
     </Screen>
   )
 })
-
-const INFO_LINE: ViewStyle = {
-  flexDirection: 'row',
-  alignItems: 'center',
-}
-
-const LINE: ViewStyle = {
-  flexDirection: 'row',
-  paddingVertical: spacing[4],
-  paddingHorizontal: spacing[6],
-  borderBottomColor: color.line,
-  borderBottomWidth: 1,
-  alignItems: 'center',
-  justifyContent: 'space-between',
-}
 
 const STATUS_LINE: ViewStyle = {
   flexDirection: 'row',

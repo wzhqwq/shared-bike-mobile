@@ -18,6 +18,7 @@ export interface BottomModalProps {
   up?: boolean
   upHeight?: number
   hideClose?: boolean
+  level?: number
 }
 
 /**
@@ -75,22 +76,40 @@ const MODAL_HEADER: ViewStyle = {
 }
 
 const BasePaper = (props: BottomModalProps) => {
-  const { style } = props
+  const { style, level = 0, up, upHeight = 330 } = props
 
   const slideAnim = useRef(new Animated.Value(20)).current
+  const backAnim = useRef(new Animated.Value(1.0)).current
 
-  const styles = [Object.assign({}, MODAL, style), { marginBottom: slideAnim }]
+  const styles = [
+    Object.assign({}, MODAL, style),
+    { marginBottom: slideAnim, transform: [
+      { scale: backAnim },
+      { perspective: 1000 },
+    ] }
+  ]
 
   useEffect(() => {
     Animated.timing(
       slideAnim,
       {
-        toValue: props.up ? props.upHeight ?? 330 : 20,
+        toValue: up ? upHeight : 20,
         duration: 200,
         useNativeDriver: false,
       }
     ).start()
-  }, [props.up, props.upHeight])
+  }, [up, upHeight])
+
+  useEffect(() => {
+    Animated.timing(
+      backAnim,
+      {
+        toValue: 1.0 - level * 0.1,
+        duration: 200,
+        useNativeDriver: false,
+      }
+    ).start()
+  }, [level])
 
   const swipeDown = Gesture.Fling().direction(Directions.DOWN).onEnd(props.onClose)
   return (

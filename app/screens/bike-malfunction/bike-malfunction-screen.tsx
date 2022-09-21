@@ -5,7 +5,7 @@ import { StackScreenProps } from "@react-navigation/stack"
 import { goBack, navigate, NavigatorParamList } from "../../navigators"
 import { Header, Screen, Text } from "../../components"
 // import { useNavigation } from "@react-navigation/native"
-import { HealthDecrease, Malfunction, RepairRecordModel, useStores } from "../../models"
+import { HealthDecrease, Malfunction, useStores } from "../../models"
 import { color } from "../../theme"
 import { RouteProp, useRoute } from "@react-navigation/native"
 import { INFO_LINE, LINE, NO_DATA } from "../../global"
@@ -16,18 +16,22 @@ const ROOT: ViewStyle = {
   flex: 1,
 }
 
-const BikeContext = createContext<number>(null)
+const BikeContext = createContext<{ bikeId: number, malfunctions: Malfunction[] }>(null)
 
 export const BikeMalfunctionScreen: FC<StackScreenProps<NavigatorParamList, "bikeMalfunction">> = observer(function BikeMalfunctionScreen() {
-  const { userStore } = useStores()
+  const { userStore, entityStore } = useStores()
   const { params } = useRoute<RouteProp<NavigatorParamList, "bikeMalfunction">>()
   const [refreshing, setRefreshing] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const version = userStore.decreasesVersion
+  const version = userStore.decreasesVersion + entityStore.malfunctionsVersion
 
   useEffect(() => {
     refresh()
   }, [params.bikeId])
+
+  useEffect(() => {
+    if (!entityStore.malfunctions.length) entityStore.listMalfunctions()
+  }, [])
 
   const refresh = useCallback(() => {
     userStore.getDecreases(params.bikeId).then(() => setRefreshing(false))
@@ -36,7 +40,7 @@ export const BikeMalfunctionScreen: FC<StackScreenProps<NavigatorParamList, "bik
   return (
     <Screen style={ROOT}>
       <Header headerText="故障列表" hasBack onLeftPress={goBack} />
-      <BikeContext.Provider value={params.bikeId}>
+      <BikeContext.Provider value={{ bikeId: params.bikeId, malfunctions: entityStore.malfunctions}}>
         <FlatList
           data={userStore.decreases}
           renderItem={renderItem}
@@ -54,13 +58,13 @@ export const BikeMalfunctionScreen: FC<StackScreenProps<NavigatorParamList, "bik
 
 const renderItem = ({ item }: ListRenderItemInfo<HealthDecrease>) => (
   <BikeContext.Consumer>
-    {bikeId => (
+    {({ bikeId, malfunctions }) => (
       <TouchableHighlight activeOpacity={0.7} underlayColor='#FFF' onPress={() => navigate('malfunctionHandle', { bikeId, malfunctionId: item.id })}>
         <View style={LINE}>
           <View>
             <View style={INFO_LINE}>
               <Text preset='fieldLabel'>故障类别：</Text>
-              <Text>{item.id}</Text>
+              <Text>{malfunctions.find(m => m.id === item.id).part_name ?? '加载中'}</Text>
             </View>
             <View style={INFO_LINE}>
               <Text preset='fieldLabel'>折合扣分：</Text>

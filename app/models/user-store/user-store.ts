@@ -6,6 +6,7 @@ import { withEnvironment } from "../extensions/with-environment"
 import { HealthDecrease, HealthDecreaseModel } from "../health-decrease/health-decrease"
 import { HeatmapItem, HeatmapItemModel } from "../heatmap-item/heatmap-item"
 import { Maintainer, MaintainerModel } from "../maintainer/maintainer"
+import { MalfunctionRecord } from "../malfunction-record/malfunction-record"
 import { Manager } from "../manager/manager"
 import { SignUpRequestModel } from "../sign-up-request/sign-up-request"
 import { Statistic, StatisticModel } from "../statistic/statistic"
@@ -27,6 +28,7 @@ export const UserStoreModel = types
     maintainers: types.optional(types.array(MaintainerModel), []),
     repairGraph: types.optional(types.array(HeatmapItemModel), []),
     decreases: types.optional(types.array(HealthDecreaseModel), []),
+    pointsAcquired: types.maybe(types.number),
   })
   .extend(withEnvironment)
   .views((self) => ({
@@ -56,6 +58,9 @@ export const UserStoreModel = types
     setDecreases(d: HealthDecrease[]) {
       self.decreasesVersion++
       self.decreases.replace(d)
+    },
+    setPoints(p: number | undefined) {
+      self.pointsAcquired = p
     }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
@@ -176,6 +181,12 @@ export const UserStoreModel = types
       if (result.ok) await self.listMaintainersInSection(self.sectionIdNow)
       return result.ok
     },
+    async report(records: MalfunctionRecord[]) {
+      self.setPoints(undefined)
+      const result: Response<number> = await self.environment.api.post('/customer/bike/report', records)
+      self.setPoints(result.data)
+      return result.ok
+    }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export interface UserStore extends Instance<typeof UserStoreModel> {}

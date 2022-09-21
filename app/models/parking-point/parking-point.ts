@@ -13,7 +13,6 @@ export const ParkingPointModel = types
     bikes_count: types.maybe(types.number),
     minimum_count: types.optional(types.number, 0),
     section_id: types.maybeNull(types.number),
-    lack_of_bike: types.optional(types.boolean, false),
     selected: types.optional(types.boolean, false),
   })
   .views((self) => ({
@@ -31,14 +30,14 @@ export const ParkingPointModel = types
         { latitude: latitude - offset, longitude: longitude + offset },
       ]
     },
+    get lackOfBike(): boolean {
+      return self.bikes_count < self.minimum_count
+    }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
     setSelected(b: boolean) {
       self.selected = b
     },
-    setLackOfBike(b: boolean) {
-      self.lack_of_bike = b
-    }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export interface ParkingPoint extends Instance<typeof ParkingPointModel> {}

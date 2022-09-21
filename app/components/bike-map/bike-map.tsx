@@ -2,7 +2,7 @@ import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "re
 import { ActivityIndicator, StyleProp, View, ViewStyle } from "react-native"
 import { observer } from "mobx-react-lite"
 import { color, spacing } from "../../theme"
-import { Bike, ParkingPoint, Section, useStores } from "../../models"
+import { Bike, BIKE_AVAILABLE, ParkingPoint, Section, useStores } from "../../models"
 import MapView, { LatLng, Marker, Polygon, Region } from "react-native-maps"
 // import * as Location from 'expo-location'
 // import global from "../../global"
@@ -102,6 +102,7 @@ export const BikeMap = observer(function BikeMap(props: BikeMapProps) {
           if (entityStore.sections.length && entityStore.sectionIdNow) {
             if (props.showBikes) {
               await entityStore.listBikesInSection()
+              await entityStore.listBikesToMove()
             }
             if (props.showParkingPoints) {
               await entityStore.listParkingPointsInSection()
@@ -145,6 +146,7 @@ export const BikeMap = observer(function BikeMap(props: BikeMapProps) {
               entityStore.setSectionIdNow(newSectionId)
               if (props.showBikes) {
                 await entityStore.listBikesInSection()
+                await entityStore.listBikesToMove()
               }
               if (props.showParkingPoints) {
                 await entityStore.listParkingPointsInSection()
@@ -252,7 +254,7 @@ const BikeMapView: FC<ViewProps> = observer(({ style, showBikes, showSections, s
   }, [region])
 
   const bikeMarkers = useMemo(() =>
-    entityStore.bikes.map(b => (
+    entityStore.bikes.filter(b => b.status === BIKE_AVAILABLE).map(b => (
       <BikeInMap bike={b} key={b.id} onPress={() => {
         setSelectedBikeId(b.id)
         if (bikePressRef.current) {
@@ -346,7 +348,9 @@ const BikeMapView: FC<ViewProps> = observer(({ style, showBikes, showSections, s
 const BikeInMap = observer(({ bike, onPress }: { bike: Bike, onPress?: (b: Bike) => void }) => {
   return (
     <Marker coordinate={{ latitude: parseFloat(bike.p_latitude), longitude: parseFloat(bike.p_longitude)}} onPress={() => onPress?.(bike)}>
-      <MaterialIcons name='pedal-bike' size={20} color={bike.selected ? color.primary : 'black'} />
+      <MaterialIcons name='pedal-bike' size={20} color={
+        bike.selected ? color.primary : (bike.highlighted ? color.palette.orangeDarker : 'black')
+      } />
     </Marker>
   )
 })
@@ -355,7 +359,9 @@ const PPInMap = observer(({ pp, onPress }: { pp: ParkingPoint, onPress?: (pp: Pa
   return (
     <>
       <Marker coordinate={{ latitude: parseFloat(pp.p_latitude), longitude: parseFloat(pp.p_longitude)}} onPress={() => onPress?.(pp)}>
-        <FontAwesome5 name='parking' size={20} color={pp.selected ? color.primary : (pp.lack_of_bike ? color.error : 'black')} />
+        <FontAwesome5 name='parking' size={20} color={
+          pp.selected ? color.primary : (pp.lackOfBike ? color.error : 'black')
+        } />
       </Marker>
       <Polygon
         key={pp.id}

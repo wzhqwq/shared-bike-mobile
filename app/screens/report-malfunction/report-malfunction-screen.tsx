@@ -4,7 +4,7 @@ import { View, ViewStyle } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack"
 import { goBack, NavigatorParamList } from "../../navigators"
 import { Button, Checkbox, Header, Screen, Text, TextField } from "../../components"
-import { MalfunctionModel, MalfunctionRecord, MalfunctionRecordModel, useStores } from "../../models"
+import { MalfunctionRecord, MalfunctionRecordModel, useStores } from "../../models"
 import { color, spacing } from "../../theme"
 import { Picker } from '@react-native-picker/picker'
 import { RouteProp, useRoute } from "@react-navigation/native"
@@ -32,7 +32,7 @@ const degrees = [
 ]
 
 export const ReportMalfunctionScreen: FC<StackScreenProps<NavigatorParamList, "reportMalfunction">> = observer(function ReportMalfunctionScreen() {
-  const { entityStore, recordStore } = useStores()
+  const { entityStore, userStore } = useStores()
   const [malfunctionId, setMalfunctionId] = useState(0)
   const [description, setDescription] = useState('')
   const [degreeIndex, setDegreeIndex] = useState(0)
@@ -70,7 +70,7 @@ export const ReportMalfunctionScreen: FC<StackScreenProps<NavigatorParamList, "r
 
   const submit = useCallback(() => {
     setLoading(true)
-    recordStore.report(records).then(success => {
+    userStore.report(records).then(success => {
       setLoading(false)
       if (success) {
         global.toast.show('故障已提交', { type: 'success' })

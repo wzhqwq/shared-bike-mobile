@@ -138,11 +138,8 @@ export const RecordStoreModel = types
         self.signUpRequests.replace(data)
       self.signUpRequestsVersion++
     },
-    async setMalfunctionRecords(data: MalfunctionRecord[], append: boolean) {
-      if (append)
-        self.malfunctionRecords.push(...data)
-      else
-        self.malfunctionRecords.replace(data)
+    async setMalfunctionRecords(data: MalfunctionRecord[]) {
+      self.malfunctionRecords.replace(data)
       self.malfunctionRecordsVersion++
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -219,11 +216,11 @@ export const RecordStoreModel = types
     },
     async showMyMalfunctionRecords(rideId: number) {
       const result: Response<MalfunctionRecord[]> = await self.environment.api.get('/customer/bike/record/list/malfunction', { ride_id: rideId })
-      if (result.ok) self.setMalfunctionRecords(result.data, false)
+      if (result.ok) self.setMalfunctionRecords(result.data)
     },
-    async showMalfunctionRecords(bikeId: number, malfunctionId: number, append = true) {
+    async showMalfunctionRecords(bikeId: number, malfunctionId: number) {
       const result: Response<MalfunctionRecord[]> = await self.environment.api.get('/maintainer/malfunction/list', { bike_id: bikeId, malfunction_id: malfunctionId })
-      if (result.ok) self.setMalfunctionRecords(result.data, append)
+      if (result.ok) self.setMalfunctionRecords(result.data)
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
@@ -272,10 +269,6 @@ export const RecordStoreModel = types
       }
       return result.ok
     },
-    async report(records: MalfunctionRecord[]) {
-      const result: Response<number> = await self.environment.api.post('/customer/bike/report', records)
-      return result.ok
-    }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export interface RecordStore extends Instance<typeof RecordStoreModel> {}
