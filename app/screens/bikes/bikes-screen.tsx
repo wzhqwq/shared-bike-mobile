@@ -116,7 +116,7 @@ const STATUS_DESTROYED: ViewStyle = {
   backgroundColor: color.palette.lightGrey,
 }
 
-const statusComponents = [
+export const statusComponents = [
   (<View key={0} style={STATUS_LINE}><View style={STATUS_AVAILABLE} /><Text>空闲</Text></View>),
   (<View key={1} style={STATUS_LINE}><View style={STATUS_OCCUPIED} /><Text>使用中</Text></View>),
   (<View key={2} style={STATUS_LINE}><View style={STATUS_UNAVAILABLE} /><Text>维护中</Text></View>),

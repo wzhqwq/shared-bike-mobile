@@ -347,7 +347,7 @@ const BikeMapView: FC<ViewProps> = observer(({ style, showBikes, showSections, s
 
 const BikeInMap = observer(({ bike, onPress }: { bike: Bike, onPress?: (b: Bike) => void }) => {
   return (
-    <Marker coordinate={{ latitude: parseFloat(bike.p_latitude), longitude: parseFloat(bike.p_longitude)}} onPress={() => onPress?.(bike)}>
+    <Marker coordinate={bike.coordinate} onPress={() => onPress?.(bike)}>
       <MaterialIcons name='pedal-bike' size={20} color={
         bike.selected ? color.primary : (bike.highlighted ? color.palette.orangeDarker : 'black')
       } />
@@ -358,7 +358,7 @@ const BikeInMap = observer(({ bike, onPress }: { bike: Bike, onPress?: (b: Bike)
 const PPInMap = observer(({ pp, onPress }: { pp: ParkingPoint, onPress?: (pp: ParkingPoint) => void }) => {
   return (
     <>
-      <Marker coordinate={{ latitude: parseFloat(pp.p_latitude), longitude: parseFloat(pp.p_longitude)}} onPress={() => onPress?.(pp)}>
+      <Marker coordinate={pp.coordinate} onPress={() => onPress?.(pp)}>
         <FontAwesome5 name='parking' size={20} color={
           pp.selected ? color.primary : (pp.lackOfBike ? color.error : 'black')
         } />
