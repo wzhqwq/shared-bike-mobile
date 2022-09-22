@@ -23,6 +23,9 @@ import { RideSetScreen } from "../screens/ride-set/ride-set-screen"
 import { MalfunctionHandleScreen } from "../screens/malfunction-handle/malfunction-handle-screen"
 import { ReportMalfunctionScreen } from "../screens/report-malfunction/report-malfunction-screen"
 import { RepairSetScreen } from "../screens/repair-set/repair-set-screen"
+import { IncomeSetScreen } from "../screens/income-set/income-set-screen"
+import { ExpenditureSetScreen } from "../screens/expenditure-set/expenditure-set-screen"
+import { BillTotalScreen } from "../screens/bill-total/bill-total-screen"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -65,6 +68,9 @@ export type NavigatorParamList = {
   depositSet: undefined
   rideSet: undefined
   repairSet: undefined
+  incomeSet: undefined
+  expenditureSet: undefined
+  billTotal: undefined
   bikeMalfunction: { bikeId: number }
   malfunctionHandle: { bikeId: number, malfunctionId: number }
   reportMalfunction: { rideId: number }
@@ -186,6 +192,9 @@ const AppStack = () => {
       <Stack.Screen name="reportMalfunction" component={ReportMalfunctionScreen} />
       <Stack.Screen name="bikeMalfunction" component={BikeMalfunctionScreen} />
       <Stack.Screen name="repairSet" component={RepairSetScreen} />
+      <Stack.Screen name="incomeSet" component={IncomeSetScreen} />
+      <Stack.Screen name="expenditureSet" component={ExpenditureSetScreen} />
+      <Stack.Screen name="billTotal" component={BillTotalScreen} />
     </Stack.Navigator>
   )
 }

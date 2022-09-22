@@ -31,8 +31,8 @@ export const SectionModel = types
     },
     get delta(): Omit<Region, keyof LatLng> {
       return {
-        latitudeDelta: Math.abs(parseFloat(self.tr_latitude) - parseFloat(self.bl_latitude)) * 0.95,
-        longitudeDelta: Math.abs(parseFloat(self.tr_longitude) - parseFloat(self.bl_longitude)) * 0.95,
+        latitudeDelta: Math.abs(parseFloat(self.tr_latitude) - parseFloat(self.bl_latitude)) * 1.1,
+        longitudeDelta: Math.abs(parseFloat(self.tr_longitude) - parseFloat(self.bl_longitude)) * 1.1,
       }
     }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars

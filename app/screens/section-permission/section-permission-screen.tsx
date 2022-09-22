@@ -50,7 +50,16 @@ export const SectionPermissionScreen: FC<StackScreenProps<NavigatorParamList, "s
     refreshUser()
   }, [params])
 
-  const inSectionIds = useMemo(() => userStore.maintainers.map(m => m.user_id), [userStore.maintainers.length])
+  const [notInSection, inSection] = useMemo(
+    () => {
+      const inSectionIds = userStore.maintainers.map(m => m.user_id)
+      return [
+        entityStore.users.length ? entityStore.users.filter(u => !inSectionIds.includes(u.id)) : [],
+        userStore.maintainers.slice(),
+      ]
+    },
+    [userStore.maintainersVersion, entityStore.usersVersion]
+  )
 
   const refreshUser = useCallback(() => {
     setUserRefreshing(true)
@@ -67,18 +76,22 @@ export const SectionPermissionScreen: FC<StackScreenProps<NavigatorParamList, "s
     entityStore.listUsers('maintainer', true).then(() => setUserRefreshing(false))
   }, [])
 
+  const revoke = useCallback((id: number) => {
+    userStore.revokeSectionFrom(params.sectionId, id)
+  }, [])
+  const grant = useCallback((id: number) => {
+    userStore.grantSectionTo(params.sectionId, id)
+  }, [])
+
   return (
     <Screen style={ROOT}>
       <Header headerText='调整管理区内维护员' hasBack />
       <View style={SPLIT_CONTAINER}>
-        <Context.Provider value={{
-          revoke: (id: number) => userStore.revokeSectionFrom(params.sectionId, id),
-          grant: (id: number) => userStore.grantSectionTo(params.sectionId, id),
-        }}>
+        <Context.Provider value={{ revoke, grant }}>
           <View style={SPLIT_VIEW}>
             <View style={SPLIT_HEADER}><Text preset='header'>在管理区内</Text></View>
             <InSectionMaintainers
-              users={userStore.maintainers}
+              users={inSection}
               refresh={refreshMaintainer}
               refreshing={maintainerRefreshing}
             />
@@ -87,7 +100,7 @@ export const SectionPermissionScreen: FC<StackScreenProps<NavigatorParamList, "s
           <View style={SPLIT_VIEW}>
             <View style={SPLIT_HEADER}><Text preset='header'>不在管理区内</Text></View>
             <AllMaintainers
-              users={entityStore.users.length ? entityStore.users.filter(u => !inSectionIds.includes(u.id)) : []}
+              users={notInSection}
               next={nextUser}
               refresh={refreshUser}
               refreshing={userRefreshing}
