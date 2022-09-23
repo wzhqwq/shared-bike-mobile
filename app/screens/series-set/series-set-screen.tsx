@@ -1,12 +1,14 @@
 import React, { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { RefreshControl, ScrollView, View, ViewStyle } from "react-native"
+import { RefreshControl, ScrollView, useWindowDimensions, View, ViewStyle } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack"
 import { goBack, NavigatorParamList } from "../../navigators"
 import { BottomModal, Button, Header, Screen, Text, TextField } from "../../components"
 import { BikeSeries, BikeSeriesModel, useStores } from "../../models"
 import { color, spacing } from "../../theme"
 import { Feather, MaterialIcons } from "@expo/vector-icons"
+import { PieChart } from "react-native-chart-kit"
+import { PieSeries, spreadColors } from "../../global"
 
 const ROOT: ViewStyle = {
   backgroundColor: color.background,
@@ -18,10 +20,19 @@ export const SeriesSetScreen: FC<StackScreenProps<NavigatorParamList, "seriesSet
   const [refreshing, setRefreshing] = useState(false)
   const [show, setShow] = useState(false)
   const [series, setSeries] = useState<BikeSeries>(null)
-  
+  const [pieData, setPieData] = useState<PieSeries[]>([])
+ 
   useEffect(() => {
     if (!entityStore.seriesList.length) entityStore.listSeries()
   }, [])
+
+  useEffect(() => {
+    if (entityStore.seriesList.length) {
+      setPieData(entityStore.seriesList.map((s, i) => (
+        { name: s.name, count: s.amount, color: spreadColors[i], legendFontColor: '#333', legendFontSize: 12 }
+      )))
+    }
+  }, [entityStore.seriesListVersion])
 
   const refresh = useCallback(() => {
     entityStore.listSeries().then(() => setRefreshing(false))
@@ -44,7 +55,24 @@ export const SeriesSetScreen: FC<StackScreenProps<NavigatorParamList, "seriesSet
   return (
     <Screen style={ROOT}>
       <Header headerText="管理单车型号" hasBack rightIcon={<MaterialIcons name='add' size={24} />} onLeftPress={goBack} onRightPress={add} />
-      <SeriesView seriesList={entityStore.seriesList} refresh={refresh} refreshing={refreshing} onModify={modify} onRemove={remove} />
+      <PieChart
+        data={pieData}
+        width={useWindowDimensions().width}
+        height={200}
+        accessor='count'
+        backgroundColor={color.background}
+        paddingLeft='10'
+        chartConfig={{ color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})` }}
+        absolute
+      />
+      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}>
+        {useMemo(
+          () => entityStore.seriesList.map(s => (
+            <OneSeries s={s} key={s.id} onModify={modify} onRemove={remove} />
+          )),
+          [entityStore.seriesListVersion]
+        )}
+      </ScrollView>
       <SetSeriesModal show={show} onClose={() => setShow(false)} series={series} />
     </Screen>
   )
@@ -69,14 +97,6 @@ const REMOVE: ViewStyle = {
   backgroundColor: color.error,
   marginLeft: spacing[2],
 }
-
-
-type SeriesProps = { seriesList: BikeSeries[], refresh: () => void, refreshing: boolean, onModify: (s: BikeSeries) => void, onRemove: (id: number) => void }
-const SeriesView: FC<SeriesProps> = observer(({ seriesList, refresh, refreshing, onModify, onRemove }) => (
-  <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}>
-    {seriesList.map(s => (<OneSeries s={s} key={s.id} onModify={onModify} onRemove={onRemove} />))}
-  </ScrollView>
-))
 
 const OneSeries: FC<{ s: BikeSeries, onModify: (s: BikeSeries) => void, onRemove: (id: number) => void }> = observer(({ s, onModify, onRemove }) => (
   <View style={LINE}>

@@ -7,8 +7,9 @@ import { Button, Text } from "../../components"
 import { useNavigation } from "@react-navigation/native"
 import { Customer, CUSTOMER_USER, getBanTimeIfExist, getNameIfExist, Maintainer, MAINTAINER_USER, MANAGER_USER, User, useStores } from "../../models"
 import { color, spacing } from "../../theme"
-import { MaterialIcons } from "@expo/vector-icons"
+import { Entypo } from "@expo/vector-icons"
 import { ContributionGraph } from "react-native-chart-kit"
+import { LIST, LIST_ITEM, LIST_ITEM_LAST, LIST_ITEM_TEXT } from "../../global"
 
 const ROOT: ViewStyle = {
   backgroundColor: color.background,
@@ -102,7 +103,7 @@ const UserPanel = observer(({ user }: { user: User }) => {
         </View>
         <Button preset='link' style={BUTTON}>
           <Text>编辑个人资料</Text>
-          <MaterialIcons name='chevron-right' size={24} />
+          <Entypo name='chevron-small-right' size={24} />
         </Button>
       </View>
       {user.role === CUSTOMER_USER && (<CustomerInfoGroup customer={user.extended as Customer} />)}
@@ -192,35 +193,11 @@ const MaintainerInfoGroup = observer(({ maintainer }: { maintainer: Maintainer }
   )
 })
 
-const LIST: ViewStyle = {
-  marginTop: spacing[4],
-  borderRadius: spacing[2],
-  overflow: 'hidden',
-}
-
-const LIST_ITEM: ViewStyle = {
-  padding: spacing[4],
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  backgroundColor: color.backgroundDarker,
-  borderBottomColor: '#0001',
-  borderBottomWidth: 1,
-}
-const LIST_ITEM_LAST: ViewStyle = {
-  ...LIST_ITEM,
-  borderBottomWidth: 0,
-}
-
-const LIST_ITEM_TEXT: TextStyle = {
-  fontSize: 16,
-}
-
 const getListItem = (to: keyof NavigatorParamList, label: string, last: boolean, hasArrow = false) => (
   <TouchableHighlight activeOpacity={0.7} underlayColor='#FFF' onPress={() => navigate(to)}>
     <View style={last ? LIST_ITEM_LAST : LIST_ITEM}>
       <Text style={LIST_ITEM_TEXT}>{label}</Text>
-      {hasArrow && (<MaterialIcons name='chevron-right' size={24} />)}
+      {hasArrow && (<Entypo name='chevron-small-right' size={24} />)}
     </View>
   </TouchableHighlight>
 )

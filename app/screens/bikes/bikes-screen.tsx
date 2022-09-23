@@ -6,7 +6,7 @@ import { goBack, navigate, NavigatorParamList } from "../../navigators"
 import { Button, Header, Screen, Text } from "../../components"
 import { useStores, Bike } from "../../models"
 import { color, spacing } from "../../theme"
-import { MaterialIcons } from "@expo/vector-icons"
+import { Entypo } from "@expo/vector-icons"
 import { INFO_LINE, LINE, NO_DATA } from "../../global"
 
 const ROOT: ViewStyle = {
@@ -148,7 +148,7 @@ const renderItem = ({ item }: ListRenderItemInfo<Bike>) => (
           <Text>{item.fail_count}</Text>
         </View>
       </View>
-      <MaterialIcons name='chevron-right' size={24} />
+      <Entypo name='chevron-small-right' size={24} />
     </View>
   </TouchableHighlight>
 )

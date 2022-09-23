@@ -9,7 +9,7 @@ import { HealthDecrease, Malfunction, useStores } from "../../models"
 import { color } from "../../theme"
 import { RouteProp, useRoute } from "@react-navigation/native"
 import { INFO_LINE, LINE, NO_DATA } from "../../global"
-import { MaterialIcons } from "@expo/vector-icons"
+import { Entypo } from "@expo/vector-icons"
 
 const ROOT: ViewStyle = {
   backgroundColor: color.background,
@@ -71,7 +71,7 @@ const renderItem = ({ item }: ListRenderItemInfo<HealthDecrease>) => (
               <Text>{item.decrease}</Text>
             </View>
           </View>
-          <MaterialIcons name='chevron-right' size={24} />
+          <Entypo name='chevron-small-right' size={24} />
         </View>
       </TouchableHighlight>
     )}

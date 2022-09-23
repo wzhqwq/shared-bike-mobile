@@ -36,4 +36,50 @@ export const LINE: ViewStyle = {
   justifyContent: 'space-between',
 }
 
+export const spreadColors = [
+  "#d9ed92",
+  "#b5e48c",
+  "#99d98c",
+  "#76c893",
+  "#52b69a",
+  "#34a0a4",
+  "#168aad",
+  "#1a759f",
+  "#1e6091",
+  "#184e77",
+]
+
+export type PieSeries = {
+  name: string,
+  count: number,
+  color: string,
+  legendFontColor: string,
+  legendFontSize: number,
+}
+
+export const LIST: ViewStyle = {
+  marginTop: spacing[4],
+  borderRadius: spacing[2],
+  overflow: 'hidden',
+}
+
+export const LIST_ITEM: ViewStyle = {
+  padding: spacing[4],
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  backgroundColor: color.backgroundDarker,
+  borderBottomColor: '#0001',
+  borderBottomWidth: 1,
+}
+export const LIST_ITEM_LAST: ViewStyle = {
+  ...LIST_ITEM,
+  borderBottomWidth: 0,
+}
+
+export const LIST_ITEM_TEXT: TextStyle = {
+  fontSize: 16,
+}
+
+
 export default global

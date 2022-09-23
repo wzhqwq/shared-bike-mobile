@@ -1,12 +1,14 @@
 import React, { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { RefreshControl, ScrollView, View, ViewStyle, Image, ImageStyle } from "react-native"
+import { RefreshControl, ScrollView, View, ViewStyle, Image, ImageStyle, useWindowDimensions } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack"
 import { goBack, NavigatorParamList } from "../../navigators"
 import { BottomModal, Button, Header, Screen, Text, TextField } from "../../components"
 import { Souvenir, SouvenirModel, useStores } from "../../models"
 import { color, spacing } from "../../theme"
 import { Feather, MaterialIcons } from "@expo/vector-icons"
+import { PieChart } from "react-native-chart-kit"
+import { PieSeries, spreadColors } from "../../global"
 
 const ROOT: ViewStyle = {
   backgroundColor: color.background,
@@ -18,10 +20,19 @@ export const SouvenirSetScreen: FC<StackScreenProps<NavigatorParamList, "souveni
   const [refreshing, setRefreshing] = useState(false)
   const [show, setShow] = useState(false)
   const [souvenirs, setSouvenirs] = useState<Souvenir>(null)
-  
+  const [pieData, setPieData] = useState<PieSeries[]>([])
+
   useEffect(() => {
     if (!entityStore.souvenirs.length) entityStore.listSouvenirs()
   }, [])
+
+  useEffect(() => {
+    if (entityStore.souvenirs.length) {
+      setPieData(entityStore.souvenirs.map((s, i) => (
+        { name: s.name, count: s.total_amount, color: spreadColors[i], legendFontColor: '#333', legendFontSize: 12 }
+      )))
+    }
+  }, [entityStore.souvenirsVersion])
 
   const refresh = useCallback(() => {
     entityStore.listSouvenirs().then(() => setRefreshing(false))
@@ -40,7 +51,24 @@ export const SouvenirSetScreen: FC<StackScreenProps<NavigatorParamList, "souveni
   return (
     <Screen style={ROOT}>
       <Header headerText="管理纪念品" hasBack rightIcon={<MaterialIcons name='add' size={24} />} onLeftPress={goBack} onRightPress={add} />
-      <SouvenirView souvenirList={entityStore.souvenirs} refresh={refresh} refreshing={refreshing} onModify={modify} />
+      <PieChart
+        data={pieData}
+        width={useWindowDimensions().width}
+        height={200}
+        accessor='count'
+        backgroundColor={color.background}
+        paddingLeft='10'
+        chartConfig={{ color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})` }}
+        absolute
+      />
+      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}>
+        {useMemo(
+          () => entityStore.souvenirs.map(s => (
+            <OneSouvenir s={s} key={s.id} onModify={modify} />
+          )),
+          [entityStore.souvenirsVersion]
+        )}
+      </ScrollView>
       <SetSouvenirModal show={show} onClose={() => setShow(false)} souvenir={souvenirs} />
     </Screen>
   )
@@ -63,19 +91,12 @@ const LINE: ViewStyle = {
 
 const IMAGE: ImageStyle = {
   resizeMode: 'contain',
-  width: 30,
-  height: 30,
+  width: 60,
+  height: 60,
   borderRadius: 15,
   marginRight: spacing[2],
 }
 
-
-type SouvenirProps = { souvenirList: Souvenir[], refresh: () => void, refreshing: boolean, onModify: (s: Souvenir) => void }
-const SouvenirView: FC<SouvenirProps> = observer(({ souvenirList, refresh, refreshing, onModify }) => (
-  <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}>
-    {souvenirList.map(s => (<OneSouvenir s={s} key={s.id} onModify={onModify} />))}
-  </ScrollView>
-))
 
 const OneSouvenir: FC<{ s: Souvenir, onModify: (s: Souvenir) => void }> = observer(({ s, onModify }) => (
   <View style={LINE}>
@@ -142,9 +163,9 @@ const SetSouvenirModal: FC<{ show: boolean, souvenir: Souvenir, onClose: () => v
   }, [name, price])
 
   return (
-    <BottomModal onClose={onClose} show={show} title={souvenir ? '修改故障名称' : '创建基本故障'} up={focused}>
+    <BottomModal onClose={onClose} show={show} title={souvenir ? '修改纪念品' : '创建纪念品'} up={focused}>
       <TextField label="物品名称" onChangeText={t => setName(t)} value={name} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} returnKeyType='done' />
-      <TextField label="兑换点数" keyboardType='number-pad' onChangeText={t => setPrice(t)} value={price} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} placeholder='1~50的整数' returnKeyType='done' />
+      <TextField label="兑换点数" keyboardType='number-pad' onChangeText={t => setPrice(t)} value={price} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} returnKeyType='done' />
       <Button loading={loading} onPress={submit} text={souvenir ? '修改' : '创建'} disabled={!ok} />
     </BottomModal>
   )

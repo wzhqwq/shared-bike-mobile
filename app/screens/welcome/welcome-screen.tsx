@@ -1,14 +1,14 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { FC, useCallback, useEffect, useRef, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { Animated, View, ViewStyle } from "react-native"
+import { Animated, Easing, TextStyle, View, ViewStyle } from "react-native"
 import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack"
-import { NavigatorParamList } from "../../navigators"
+import { navigate, NavigatorParamList } from "../../navigators"
 import { Button, Checkbox, Screen, Text, TextField } from "../../components"
 import { useNavigation } from "@react-navigation/native"
 import { CUSTOMER_USER, MAINTAINER_USER, MANAGER_USER, UNLINKED_USER, useStores } from "../../models"
-import { spacing } from "../../theme"
-import { color } from "@storybook/theming"
+import { color, spacing } from "../../theme"
+import { MaterialIcons } from "@expo/vector-icons"
 
 const ROOT: ViewStyle = {
   justifyContent: 'center',
@@ -34,7 +34,7 @@ const HIDE: ViewStyle = {
 const DIVIDER: ViewStyle = {
   height: 1,
   width: '100%',
-  backgroundColor: color.border,
+  backgroundColor: color.line,
   marginVertical: spacing[4],
 }
 
@@ -54,7 +54,7 @@ export const WelcomeScreen: FC<StackScreenProps<NavigatorParamList, "welcome">> 
 
   useEffect(() => {
     (async () => {
-      if (!userStore.me && !await userStore.fetch()) return
+      if (!userStore.me && !(userStore.environment.jwt && await userStore.fetch())) return
       if (userStore.me.role !== UNLINKED_USER) {
         if (navigation.getState().index) {
           navigation.goBack()
@@ -140,9 +140,7 @@ export const WelcomeScreen: FC<StackScreenProps<NavigatorParamList, "welcome">> 
   }, [userStore.me])
 
   const logOut = useCallback(() => {
-    userStore.logOut().then(() => {
-      navigation.reset({ index: 0, routes: [{ name: 'welcome' }] })
-    })
+    userStore.logOut()
   }, [])
 
   return (
@@ -177,10 +175,47 @@ export const WelcomeScreen: FC<StackScreenProps<NavigatorParamList, "welcome">> 
               </Animated.View>
             </View>
           </Animated.View>
-        ) : (
-          <Button text='登录' onPress={() => navigation.navigate('login')} />
-        )
+        ) : (<Welcome />)
       }
     </Screen>
   )
 })
+
+const WELCOME: ViewStyle = {
+  alignItems: 'center',
+}
+
+const WELCOME_TITLE: TextStyle = {
+  fontSize: 24,
+  color: color.primaryDarker,
+  marginBottom: spacing[6],
+}
+
+const Welcome: FC = () => {
+  const slideAnim = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    Animated.timing(
+      slideAnim,
+      { toValue: 1, duration: 300, useNativeDriver: false, easing: Easing.out(Easing.ease) }
+    ).start()
+  })
+
+  const styles = {
+    ...WELCOME,
+    transform: [{ translateY: slideAnim.interpolate(
+      { inputRange: [0, 1], outputRange: [100, 0] }
+    )}],
+    opacity: slideAnim.interpolate(
+      { inputRange: [0, 1], outputRange: [0, 1] }
+    ),
+  }
+
+  return (
+    <Animated.View style={styles}>
+      <MaterialIcons name='pedal-bike' size={64} color={color.primary} />
+      <Text style={WELCOME_TITLE} text='欢迎使用校园共享单车系统' />
+      <Button text='登录' onPress={() => navigate('login')} />
+    </Animated.View>
+  )
+}

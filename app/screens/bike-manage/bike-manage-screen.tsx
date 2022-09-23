@@ -6,7 +6,7 @@ import { navigate, NavigatorParamList } from "../../navigators"
 import { BikeMap, BottomModal, BottomPaper, Button, Text, TextField } from "../../components"
 import { Bike, BIKE_AVAILABLE, BIKE_UNAVAILABLE, ParkingPoint, useStores } from "../../models"
 import { color, spacing } from "../../theme"
-import { MaterialIcons } from "@expo/vector-icons"
+import { MaterialIcons, Entypo } from "@expo/vector-icons"
 import { LatLng, MapEvent, Marker, Region } from "react-native-maps"
 import global, { LINE, NO_DATA } from "../../global"
 import { Scanner } from "../../components/scanner/scanner"
@@ -402,7 +402,7 @@ const renderItem = ({ item }: ListRenderItemInfo<Bike>) => (
                 <Text>{item.health}</Text>
               </View>
             </View>
-            <MaterialIcons name='chevron-right' size={24} />
+            <Entypo name='chevron-small-right' size={24} />
           </View>
         </TouchableHighlight>
       )
