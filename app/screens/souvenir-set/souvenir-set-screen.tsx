@@ -94,7 +94,7 @@ const IMAGE: ImageStyle = {
   resizeMode: 'contain',
   width: 60,
   height: 60,
-  borderRadius: 15,
+  borderRadius: spacing[2],
   marginRight: spacing[2],
 }
 
@@ -149,13 +149,13 @@ const SetSouvenirModal: FC<{ show: boolean, souvenir: Souvenir, onClose: () => v
       p = souvenir.modify(name, parseInt(price), imageKey)
     }
     else {
-      p = entityStore.addSouvenir(SouvenirModel.create({ name, price: parseInt(price), image_key: imageKey, id: -1 }))
+      p = entityStore.addSouvenir(SouvenirModel.create({ name, price: parseInt(price), image_key: imageKey }))
     }
     p.then(success => {
       setLoading(false)
       if (success) onClose()
     })
-  }, [souvenir, name, price])
+  }, [souvenir, name, price, imageKey])
 
   const ok = useMemo(() => {
     if (!name || !price) return false
@@ -167,7 +167,7 @@ const SetSouvenirModal: FC<{ show: boolean, souvenir: Souvenir, onClose: () => v
     <BottomModal onClose={onClose} show={show} title={souvenir ? '修改纪念品' : '创建纪念品'} up={focused}>
       <TextField label="物品名称" onChangeText={t => setName(t)} value={name} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} returnKeyType='done' />
       <TextField label="兑换点数" keyboardType='number-pad' onChangeText={t => setPrice(t)} value={price} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} returnKeyType='done' />
-      <Upload label='商品图片' />
+      <Upload label='商品图片' imageKey={imageKey} onChange={key => setImageKey(key)} />
       <Button loading={loading} onPress={submit} text={souvenir ? '修改' : '创建'} disabled={!ok} />
     </BottomModal>
   )

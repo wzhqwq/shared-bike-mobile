@@ -11,11 +11,11 @@ const giftIcon = require('./gift.png')
 export const SouvenirModel = types
   .model("Souvenir")
   .props({
-    id: types.identifierNumber,
+    id: types.optional(types.identifierNumber, -1),
     name: types.string,
     image_key: types.maybeNull(types.string),
     price: types.number,
-    total_amount: types.number,
+    total_amount: types.maybe(types.number),
   })
   .extend(withEnvironment)
   .views((self) => ({
@@ -33,7 +33,7 @@ export const SouvenirModel = types
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
     async modify(name: string, price: number, imageKey: string) {
-      const s = SouvenirModel.create({ name, price, image_key: imageKey })
+      const s = SouvenirModel.create({ name, price, image_key: imageKey, id: self.id })
       const result: Response<null> = await self.environment.api.post('/manager/souvenir/modify', s)
       if (result.ok) self.update(s)
       return result.ok

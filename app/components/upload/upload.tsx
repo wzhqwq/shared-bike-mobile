@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Image, ImageStyle, StyleProp, TouchableOpacity, View, ViewStyle } from "react-native"
+import { ActivityIndicator, Image, ImageStyle, StyleProp, TouchableOpacity, View, ViewStyle } from "react-native"
 import { observer } from "mobx-react-lite"
 import { color, spacing, typography } from "../../theme"
 import * as FileSystem from "expo-file-system"
@@ -47,7 +47,6 @@ const BUTTON: ViewStyle = {
   borderRadius: 12,
   alignItems: 'center',
   justifyContent: 'center',
-  position: 'absolute',
   shadowColor: '#000',
   shadowOffset: { width: -2, height: 2 },
   shadowOpacity: 0.2,
@@ -55,16 +54,27 @@ const BUTTON: ViewStyle = {
 
 const DELETE: ViewStyle = {
   ...BUTTON,
-  left: 88,
-  top: -112,
   backgroundColor: color.error,
 }
 
 const UPLOAD: ViewStyle = {
   ...BUTTON,
-  left: 88,
-  top: -80,
   backgroundColor: color.primary,
+}
+
+const BUTTON_GROUP: ViewStyle = {
+  flexDirection: 'row',
+  position: 'absolute',
+  justifyContent: 'space-between',
+  width: 60,
+  left: 88,
+  top: 4,
+}
+
+const UPLOADED: ViewStyle = {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginLeft: 10,
 }
 
 export const Upload = observer(function Upload(props: UploadProps) {
@@ -72,6 +82,7 @@ export const Upload = observer(function Upload(props: UploadProps) {
   const styles = Object.assign({}, CONTAINER, style)
   const [image, setImage] = useState<string>(null)
   const [uploaded, setUploaded] = useState<boolean>(false)
+  const [uploading, setUploading] = useState<boolean>(false)
 
   const { userStore } = useStores()
 
@@ -80,6 +91,11 @@ export const Upload = observer(function Upload(props: UploadProps) {
       setImage(BASE_URL + '/image/show?key=' + props.imageKey)
       setUploaded(true)
     }
+    else {
+      setImage(null)
+      setUploaded(false)
+    }
+    setUploading(false)
   }, [props.imageKey])
 
   const pickImage = async () => {
@@ -95,14 +111,13 @@ export const Upload = observer(function Upload(props: UploadProps) {
       quality: 1,
     }) as ImageInfo
 
-    console.log(result)
-
     if (!result.cancelled) {
       setImage(result.uri)
     }
   }
 
   const upload = async () => {
+    setUploading(true)
     const response = await FileSystem.uploadAsync(
       BASE_URL + '/image/upload',
       image,
@@ -112,7 +127,7 @@ export const Upload = observer(function Upload(props: UploadProps) {
         uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
       }
     )
-    console.log(response)
+    setUploading(false)
     if (response.status === 200) {
       const data = JSON.parse(response.body) as { status: boolean, data: string }
       if (data.status) {
@@ -128,18 +143,36 @@ export const Upload = observer(function Upload(props: UploadProps) {
       {image ? (
         <>
           <Image source={{ uri: image }} style={IMAGE} />
-          <TouchableOpacity activeOpacity={0.7} onPress={() => setImage(null)} >
-            <View style={DELETE}>
-              <MaterialIcons name="close" size={20} color={color.palette.white} />
-            </View>
-          </TouchableOpacity>
-          {!uploaded && (
-            <TouchableOpacity activeOpacity={0.7} onPress={upload} >
-              <View style={UPLOAD}>
-                <MaterialIcons name="file-upload" size={20} color={color.palette.white} />
+          <View style={BUTTON_GROUP}>
+            <TouchableOpacity activeOpacity={0.7} onPress={() => {
+              setImage(null)
+              setUploaded(false)
+              setUploading(false)
+            }} >
+              <View style={DELETE}>
+                <MaterialIcons name="close" size={20} color={color.palette.white} />
               </View>
             </TouchableOpacity>
-          )}
+            {!uploaded ? (
+              uploading ? (
+                <View style={UPLOADED}>
+                  <ActivityIndicator size="small" color={color.primaryDarker} />
+                  <Text>上传中</Text>
+                </View>
+              ) : (
+                <TouchableOpacity activeOpacity={0.7} onPress={upload} >
+                  <View style={UPLOAD}>
+                    <MaterialIcons name="file-upload" size={20} color={color.palette.white} />
+                  </View>
+                </TouchableOpacity>
+              )
+            ) : (
+              <View style={UPLOADED}>
+                <MaterialIcons name="check" size={20} color={color.primaryDarker} />
+                <Text>已上传</Text>
+              </View>
+            )}
+          </View>
         </>
       ) : (
         <TouchableOpacity activeOpacity={0.7} onPress={pickImage} >
