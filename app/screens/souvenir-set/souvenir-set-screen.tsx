@@ -9,6 +9,7 @@ import { color, spacing } from "../../theme"
 import { Feather, MaterialIcons } from "@expo/vector-icons"
 import { PieChart } from "react-native-chart-kit"
 import { PieSeries, spreadColors } from "../../global"
+import { Upload } from "../../components/upload/upload"
 
 const ROOT: ViewStyle = {
   backgroundColor: color.background,
@@ -166,6 +167,7 @@ const SetSouvenirModal: FC<{ show: boolean, souvenir: Souvenir, onClose: () => v
     <BottomModal onClose={onClose} show={show} title={souvenir ? '修改纪念品' : '创建纪念品'} up={focused}>
       <TextField label="物品名称" onChangeText={t => setName(t)} value={name} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} returnKeyType='done' />
       <TextField label="兑换点数" keyboardType='number-pad' onChangeText={t => setPrice(t)} value={price} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} returnKeyType='done' />
+      <Upload label='商品图片' />
       <Button loading={loading} onPress={submit} text={souvenir ? '修改' : '创建'} disabled={!ok} />
     </BottomModal>
   )

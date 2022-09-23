@@ -15,7 +15,7 @@ const INPUT: TextStyle = {
   color: color.text,
   fontSize: 18,
   backgroundColor: color.backgroundDarker,
-  borderRadius: spacing[1],
+  borderRadius: spacing[2],
   paddingHorizontal: spacing[4],
   paddingVertical: spacing[3],
 }
