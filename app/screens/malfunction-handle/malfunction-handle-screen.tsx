@@ -120,7 +120,7 @@ const renderItem = ({ item }: ListRenderItemInfo<MalfunctionRecord>) => (
       </View>
       <View style={INFO_LINE}>
         <Text preset='fieldLabel'>上报时间：</Text>
-        <Text>{moment(item.time).format("YYYY-MM-DD HH:MM:SS")}</Text>
+        <Text>{moment(item.time).format("YYYY-MM-DD HH:mm:ss")}</Text>
       </View>
       <View style={INFO_LINE}>
         <Text preset='fieldLabel'>故障描述：</Text>

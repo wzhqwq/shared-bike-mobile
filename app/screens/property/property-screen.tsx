@@ -3,13 +3,12 @@ import { observer } from "mobx-react-lite"
 import { RefreshControl, ScrollView, TouchableOpacity, View, ViewStyle } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack"
 import { navigate, NavigatorParamList } from "../../navigators"
-import { BikeSeries, Statistic, useStores } from "../../models"
+import { useStores } from "../../models"
 import { color, spacing } from "../../theme"
 import { PieChart } from "react-native-chart-kit"
 import { TouchableHighlight } from "react-native-gesture-handler"
 import { Text } from "../../components"
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons"
-import { LinearGradient } from "expo-linear-gradient"
 
 const ROOT: ViewStyle = {
   backgroundColor: color.background,
@@ -81,6 +80,11 @@ type PieSeries = {
 export const PropertyScreen: FC<StackScreenProps<NavigatorParamList, "property">> = observer(function PropertyScreen() {
   const { userStore, entityStore } = useStores()
   const [refreshing, setRefreshing] = React.useState(false)
+  const [pieData1, setPieData1] = useState<PieSeries[]>([])
+  const [pieData2, setPieData2] = useState<PieSeries[]>([])
+
+  const { statistic } = userStore
+  const { seriesList, seriesListVersion } = entityStore
 
   const refresh = useCallback(() => {
     userStore.getStatistics()
@@ -91,38 +95,6 @@ export const PropertyScreen: FC<StackScreenProps<NavigatorParamList, "property">
   useEffect(() => {
     refresh()
   }, [])
-
-  return (<StatisticView
-    statistic={userStore.statistic}
-    seriesList={entityStore.seriesList}
-    refresh={refresh}
-    refreshing={refreshing}
-  />)
-})
-
-type StatisticProps = {
-  statistic: Statistic
-  seriesList: BikeSeries[]
-  refreshing: boolean
-  refresh: () => void
-}
-
-const colors = [
-  "#d9ed92",
-  "#b5e48c",
-  "#99d98c",
-  "#76c893",
-  "#52b69a",
-  "#34a0a4",
-  "#168aad",
-  "#1a759f",
-  "#1e6091",
-  "#184e77",
-]
-
-const StatisticView = observer(({ statistic, refreshing, refresh, seriesList }: StatisticProps) => {
-  const [pieData1, setPieData1] = useState<PieSeries[]>([])
-  const [pieData2, setPieData2] = useState<PieSeries[]>([])
 
   useEffect(() => {
     if (statistic) {
@@ -141,7 +113,7 @@ const StatisticView = observer(({ statistic, refreshing, refresh, seriesList }: 
         { name: s.name, count: s.amount, color: colors[i], legendFontColor: '#333', legendFontSize: 12 }
       )))
     }
-  }, [seriesList.length])
+  }, [seriesListVersion])
 
   return (
     <View style={ROOT}>
@@ -203,7 +175,7 @@ const StatisticView = observer(({ statistic, refreshing, refresh, seriesList }: 
                   <MaterialCommunityIcons name='gift' size={24} color={color.primary} />
                 </TouchableHighlight>
                 <TouchableHighlight activeOpacity={0.9} underlayColor='#FFF5' onPress={() => navigate('billOfOther')} style={INFO_GROUP_HIGHLIGHT}>
-                  <MaterialCommunityIcons name='cash' size={24} color={color.primary} />
+                  <MaterialIcons name='more-horiz' size={24} color={color.primary} />
                 </TouchableHighlight>
               </View>
             </View>
@@ -213,3 +185,16 @@ const StatisticView = observer(({ statistic, refreshing, refresh, seriesList }: 
     </View>
   )
 })
+
+const colors = [
+  "#d9ed92",
+  "#b5e48c",
+  "#99d98c",
+  "#76c893",
+  "#52b69a",
+  "#34a0a4",
+  "#168aad",
+  "#1a759f",
+  "#1e6091",
+  "#184e77",
+]

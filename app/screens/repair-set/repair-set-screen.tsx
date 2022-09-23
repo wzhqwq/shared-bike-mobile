@@ -75,7 +75,7 @@ const renderItem = ({ item }: ListRenderItemInfo<RepairRecord>) => (
         </View>
         <View style={INFO_LINE}>
           <Text preset='fieldLabel'>处理时间：</Text>
-          <Text>{moment(item.time).format('YYYY-MM-DD HH:MM:SS')}</Text>
+          <Text>{moment(item.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
         </View>
       </View>
     </View>

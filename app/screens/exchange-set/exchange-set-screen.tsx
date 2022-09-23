@@ -91,7 +91,7 @@ const renderItem = ({ item }: ListRenderItemInfo<MixedExchangeRecord>) => {
           </View>
           <View style={INFO_LINE}>
             <Text preset='fieldLabel'>兑换时间：</Text>
-            <Text>{moment(item.record.time).format('YYYY-MM-DD HH:MM:SS')}</Text>
+            <Text>{moment(item.record.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
           </View>
         </View>
         {userStore.me.role === MANAGER_USER && !item.record.given && (

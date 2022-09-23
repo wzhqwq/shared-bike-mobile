@@ -67,11 +67,11 @@ const renderItem = ({ item }: ListRenderItemInfo<RideRecord>) => (
       </View>
       <View style={INFO_LINE}>
         <Text preset='fieldLabel'>开始骑行时间：</Text>
-        <Text>{moment(item.start_time).format('YYYY-MM-DD HH:MM:SS')}</Text>
+        <Text>{moment(item.start_time).format('YYYY-MM-DD HH:mm:ss')}</Text>
       </View>
       <View style={INFO_LINE}>
         <Text preset='fieldLabel'>结束骑行时间：</Text>
-        <Text>{moment(item.end_time).format('YYYY-MM-DD HH:MM:SS')}</Text>
+        <Text>{moment(item.end_time).format('YYYY-MM-DD HH:mm:ss')}</Text>
       </View>
     </View>
   </View>

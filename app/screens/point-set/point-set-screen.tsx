@@ -79,7 +79,7 @@ const renderItem = ({ item }: ListRenderItemInfo<PointRecord>) => (
         </View>
         <View style={INFO_LINE}>
           <Text preset='fieldLabel'>时间：</Text>
-          <Text>{moment(item.time).format('YYYY-MM-DD HH:MM:SS')}</Text>
+          <Text>{moment(item.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
         </View>
       </View>
     </View>
