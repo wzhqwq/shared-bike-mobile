@@ -259,6 +259,10 @@ const AddBikePaper = ({ show, onClose, pos, openScanner, result }: { show: boole
   useEffect(() => {
     if (!entityStore.seriesList.length) entityStore.listSeries()
   }, [])
+
+  useEffect(() => {
+    if (entityStore.seriesList.length) setSeriesId(entityStore.seriesList[0].id)
+  }, [entityStore.seriesList])
   
   useEffect(() => {
     if (show) {

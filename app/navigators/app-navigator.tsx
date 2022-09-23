@@ -8,10 +8,10 @@ import React from "react"
 import { useColorScheme } from "react-native"
 import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import { BikeDetailScreen, BikeMalfunctionScreen, BikeManageScreen, BikesScreen, ConfigSetScreen, GeoEditScreen, LoginScreen, MemberScreen, ProfileScreen, PropertyScreen, RequestScreen, RideScreen, SeriesSetScreen, ShopScreen, SignUpScreen, SouvenirSetScreen, WelcomeScreen } from "../screens"
+import { BikeDetailScreen, BikeMalfunctionScreen, BikeManageScreen, BikesScreen, BillOfBikeScreen, BillOfOtherScreen, BillOfSouvenirScreen, ConfigSetScreen, GeoEditScreen, LoginScreen, MemberScreen, ProfileScreen, PropertyScreen, RequestScreen, RideScreen, SeriesSetScreen, ShopScreen, SignUpScreen, SouvenirSetScreen, WelcomeScreen } from "../screens"
 import { navigationRef, useBackButtonHandler } from "./navigation-utilities"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
-import { Feather, FontAwesome5, MaterialIcons } from "@expo/vector-icons"
+import { Feather, FontAwesome5, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons"
 import { color } from "../theme"
 import { MalfunctionSetScreen } from "../screens/malfunction-set/malfunction-set-screen"
 import { SectionPermissionScreen } from "../screens/section-permission/section-permission-screen"
@@ -71,6 +71,9 @@ export type NavigatorParamList = {
   incomeSet: undefined
   expenditureSet: undefined
   billTotal: undefined
+  billOfBike: undefined
+  billOfOther: undefined
+  billOfSouvenir: undefined
   bikeMalfunction: { bikeId: number }
   malfunctionHandle: { bikeId: number, malfunctionId: number }
   reportMalfunction: { rideId: number }
@@ -89,7 +92,7 @@ const CustomerTabs = () => {
           case 'ride':
             return <MaterialIcons size={size} name='pedal-bike' color={color} />
           case 'shop':
-            return <Feather size={20} name='package' color={color} />
+            return <MaterialCommunityIcons size={size} name='gift' color={color} />
           default:
             return <MaterialIcons size={size} name='person-outline' color={color} />
         }
@@ -195,6 +198,9 @@ const AppStack = () => {
       <Stack.Screen name="incomeSet" component={IncomeSetScreen} />
       <Stack.Screen name="expenditureSet" component={ExpenditureSetScreen} />
       <Stack.Screen name="billTotal" component={BillTotalScreen} />
+      <Stack.Screen name="billOfBike" component={BillOfBikeScreen} />
+      <Stack.Screen name="billOfOther" component={BillOfOtherScreen} />
+      <Stack.Screen name="billOfSouvenir" component={BillOfSouvenirScreen} />
     </Stack.Navigator>
   )
 }
