@@ -101,7 +101,7 @@ const UserPanel = observer(({ user }: { user: User }) => {
           <Image source={user.avatar_url} style={AVATAR} />
           <Text preset='default'>{user.nickname}{getNameIfExist(user)}{getBanTimeIfExist(user)}</Text>
         </View>
-        <Button preset='link' style={BUTTON}>
+        <Button preset='link' style={BUTTON} onPress={() => navigate('editProfile')}>
           <Text>编辑个人资料</Text>
           <Entypo name='chevron-small-right' size={24} />
         </Button>

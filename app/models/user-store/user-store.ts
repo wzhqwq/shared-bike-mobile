@@ -108,15 +108,18 @@ export const UserStoreModel = types
       const result: Response<null> = await self.environment.api.post('/auth/edit_password', { password, old_password: oldPassword })
       return result.ok
     },
-    async changeProfile(nickname: string, name?: string, phone?: string) {
-      const result: Response<User> = await self.environment.api.post('/auth/edit_profile', { nickname, name, phone })
+    async changeProfile(nickname: string, name?: string, phone?: string, avatarKey?: string) {
+      const result: Response<User> = await self.environment.api.post(
+        '/auth/edit_profile',
+        { nickname, name, phone, avatar_key: avatarKey },
+      )
       if (result.ok) {
-        self.me.updateNickname(result.data.nickname)
+        self.me.updateNickname(nickname)
+        self.me.updateAvatarKey(avatarKey)
         if (self.me.role === MAINTAINER_USER || self.me.role === MANAGER_USER) {
-          const local = self.me.extended as (Maintainer | Manager)
-          const remote = result.data.extended as (Maintainer | Manager)
-          local.updateName(remote.name)
-          local.updatePhone(remote.phone)
+          const extended = self.me.extended as (Maintainer | Manager)
+          extended.updateName(name)
+          extended.updatePhone(phone)
         }
       }
       return result.ok

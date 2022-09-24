@@ -8,7 +8,7 @@ import React from "react"
 import { useColorScheme } from "react-native"
 import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import { BikeDetailScreen, BikeMalfunctionScreen, BikeManageScreen, BikesScreen, BillOfBikeScreen, BillOfOtherScreen, BillOfSouvenirScreen, ConfigSetScreen, GeoEditScreen, LoginScreen, MemberScreen, ProfileScreen, PropertyScreen, RequestScreen, RideScreen, SeriesSetScreen, ShopScreen, SignUpScreen, SouvenirSetScreen, WelcomeScreen } from "../screens"
+import { BikeDetailScreen, BikeMalfunctionScreen, BikeManageScreen, BikesScreen, BillOfBikeScreen, BillOfOtherScreen, BillOfSouvenirScreen, ConfigSetScreen, EditProfileScreen, GeoEditScreen, LoginScreen, MemberScreen, ProfileScreen, PropertyScreen, RequestScreen, RideScreen, SeriesSetScreen, ShopScreen, SignUpScreen, SouvenirSetScreen, WelcomeScreen } from "../screens"
 import { navigationRef, useBackButtonHandler } from "./navigation-utilities"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import { Feather, FontAwesome5, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons"
@@ -201,6 +201,7 @@ const AppStack = () => {
       <Stack.Screen name="billOfBike" component={BillOfBikeScreen} />
       <Stack.Screen name="billOfOther" component={BillOfOtherScreen} />
       <Stack.Screen name="billOfSouvenir" component={BillOfSouvenirScreen} />
+      <Stack.Screen name="editProfile" component={EditProfileScreen} />
     </Stack.Navigator>
   )
 }

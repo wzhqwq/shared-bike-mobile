@@ -16,7 +16,7 @@ interface AllRoutes {
   '/auth/request_to_be': SignUpRequest
   '/auth/check_role': undefined
   '/auth/me': undefined
-  '/auth/edit_profile': { nickname?: string, name?: string, phone?: string }
+  '/auth/edit_profile': { nickname?: string, name?: string, phone?: string, avatar_key?: string }
   '/auth/edit_password': { password: string, old_password: string }
   '/customer/bike/list': { longitude: string, latitude: string }
   '/customer/bike/parking_point/list': { longitude: string, latitude: string }

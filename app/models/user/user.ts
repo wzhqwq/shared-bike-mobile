@@ -27,7 +27,10 @@ export const UserModel = types
   .actions((self) => ({
     updateNickname(nickname: string) {
       self.nickname = nickname
-    }
+    },
+    updateAvatarKey(avatarKey: string) {
+      self.avatar_key = avatarKey
+    },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export const UNLINKED_USER = 0
