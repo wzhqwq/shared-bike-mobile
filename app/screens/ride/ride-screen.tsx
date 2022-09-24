@@ -93,6 +93,7 @@ export const RideScreen: FC<StackScreenProps<NavigatorParamList, "ride">> = obse
     bikeNow.unlockBike(bikeNow.coordinate).then(success => {
       if (success) {
         setPosDrag(bikeNow.coordinate)
+        posRef.current = bikeNow.coordinate
         setStatus(RIDING)
       }
     })
