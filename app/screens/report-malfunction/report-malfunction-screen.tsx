@@ -3,7 +3,7 @@ import { observer } from "mobx-react-lite"
 import { View, ViewStyle } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack"
 import { goBack, NavigatorParamList } from "../../navigators"
-import { Button, Checkbox, Header, Screen, Text, TextField } from "../../components"
+import { Button, Checkbox, Header, Screen, Text, TextField, Upload } from "../../components"
 import { MalfunctionRecord, MalfunctionRecordModel, useStores } from "../../models"
 import { color, spacing } from "../../theme"
 import { Picker } from '@react-native-picker/picker'
@@ -36,7 +36,7 @@ export const ReportMalfunctionScreen: FC<StackScreenProps<NavigatorParamList, "r
   const [malfunctionId, setMalfunctionId] = useState(0)
   const [description, setDescription] = useState('')
   const [degreeIndex, setDegreeIndex] = useState(0)
-  const [imageKey, setImageKey] = useState(null)
+  const [imageKey, setImageKey] = useState<string>(null)
   const [loading, setLoading] = useState(false)
   const [records, setRecords] = useState<MalfunctionRecord[]>([])
 
@@ -95,6 +95,7 @@ export const ReportMalfunctionScreen: FC<StackScreenProps<NavigatorParamList, "r
           ))}
         </View>
         <TextField label="问题描述" onChangeText={t => setDescription(t)} value={description} returnKeyType='done' />
+        <Upload label="上传图片" imageKey={imageKey} onChange={setImageKey} />
         <View style={BUTTON_GROUP}>
           <Button onPress={append} text='将故障加入报告' disabled={!malfunctionId} />
           <Button onPress={submit} text={`提交报告（${records.length}份）`} disabled={!records.length} loading={loading} />
