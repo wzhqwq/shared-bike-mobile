@@ -166,7 +166,6 @@ const MAINTAINER_GROUP: ViewStyle = {
 
 const HEATMAP: ViewStyle = {
   marginTop: spacing[2],
-  backgroundColor: color.transparent,
   borderRadius: spacing[1],
   alignSelf: 'center',
 }
@@ -181,10 +180,17 @@ const MaintainerInfoGroup = observer(({ maintainer }: { maintainer: Maintainer }
       <Text>累计处理了 {maintainer.handle_count} 次故障</Text>
       <ContributionGraph
         values={userStore.repairGraph}
-        width={330}
+        width={340}
         height={200}
         tooltipDataAttrs={null}
-        chartConfig={{ style: {}, color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, backgroundColor: color.transparent }}
+        gutterSize={2}
+        squareSize={16}
+        chartConfig={{
+          style: {},
+          color: (opacity = 1) => `rgba(61, 131, 97, ${opacity * 0.8 + 0.2})`,
+        }}
+        showMonthLabels
+        getMonthLabel={(month) => ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'][month] + '月'}
         endDate={new Date()}
         numDays={20}
         style={HEATMAP}
@@ -213,7 +219,7 @@ const ManagerList = () => (
 
 const MaintainerList = () => (
   <View style={LIST}>
-    {getListItem('configSet', '维修记录', true, true)}
+    {getListItem('repairSet', '维修记录', true, true)}
   </View>
 )
 

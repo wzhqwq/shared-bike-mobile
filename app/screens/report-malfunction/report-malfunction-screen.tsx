@@ -47,8 +47,8 @@ export const ReportMalfunctionScreen: FC<StackScreenProps<NavigatorParamList, "r
   }, [])
 
   useEffect(() => {
-    if (entityStore.malfunctions.length) setMalfunctionId(entityStore.malfunctions[0]?.id)
-  }, [entityStore.malfunctions.length])
+    if (entityStore.malfunctions.length) setMalfunctionId(entityStore.malfunctions[0].id)
+  }, [entityStore.malfunctionsVersion])
 
   const append = useCallback(() => {
     setRecords(r => [
@@ -65,7 +65,7 @@ export const ReportMalfunctionScreen: FC<StackScreenProps<NavigatorParamList, "r
     setDegreeIndex(0)
     setDescription('')
     setImageKey(null)
-    setMalfunctionId(1)
+    setMalfunctionId(entityStore.malfunctions[0].id)
   }, [degreeIndex, description, imageKey, malfunctionId, params.rideId])
 
   const submit = useCallback(() => {

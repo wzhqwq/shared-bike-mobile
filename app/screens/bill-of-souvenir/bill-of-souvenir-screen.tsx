@@ -110,7 +110,7 @@ const AddSouvenirBillModal: FC<{ show: boolean, onClose: () => void }> = ({ show
     if (show) {
       setAmount('')
       setExpense('')
-      setSouvenirId(0)
+      if (souvenirs.length) setSouvenirId(souvenirs[0].id)
     }
     else {
       setFocused(false)

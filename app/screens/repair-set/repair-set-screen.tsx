@@ -34,7 +34,7 @@ export const RepairSetScreen: FC<StackScreenProps<NavigatorParamList, "repairSet
 
   return (
     <Screen style={ROOT}>
-      <Header headerText="积分记录" hasBack onLeftPress={goBack} />
+      <Header headerText="维修记录" hasBack onLeftPress={goBack} />
       <FlatList
         onEndReached={next}
         data={recordStore.repairRecords}
@@ -43,7 +43,7 @@ export const RepairSetScreen: FC<StackScreenProps<NavigatorParamList, "repairSet
         onRefresh={refresh}
         refreshing={refreshing}
         ListEmptyComponent={(
-          <Text style={NO_DATA}>没有积分变化记录</Text>
+          <Text style={NO_DATA}>没有维修记录</Text>
         )}  
       />
     </Screen>

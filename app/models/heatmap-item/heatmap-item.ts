@@ -6,7 +6,7 @@ import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 export const HeatmapItemModel = types
   .model("HeatmapItem")
   .props({
-    data: types.string,
+    date: types.string,
     count: types.number,
   })
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars

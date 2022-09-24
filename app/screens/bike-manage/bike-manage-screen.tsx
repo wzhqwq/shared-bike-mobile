@@ -77,7 +77,6 @@ export const BikeManageScreen: FC<StackScreenProps<NavigatorParamList, "bikeMana
 
   useEffect(() => {
     if (result) {
-      setResult('')
       setBikeNow(null)
       setShowScanner(false)
       if (isFinding) {
@@ -86,7 +85,7 @@ export const BikeManageScreen: FC<StackScreenProps<NavigatorParamList, "bikeMana
         })()
       }
     }
-  }, [result])
+  }, [result, isFinding])
 
   useEffect(() => {
     if (userStore.bikeNow) {
@@ -117,6 +116,7 @@ export const BikeManageScreen: FC<StackScreenProps<NavigatorParamList, "bikeMana
             <Button onPress={() => {
               setShowScanner(true)
               setIsFinding(true)
+              setResult('')
             }}>
               <MaterialIcons name='qr-code-scanner' size={24} color='white' />
             </Button>
@@ -132,13 +132,14 @@ export const BikeManageScreen: FC<StackScreenProps<NavigatorParamList, "bikeMana
         onClose={() => {
           setShowAddBike(false)
           setShowDrag(false)
+          setResult('')
         }}
         pos={posDrag}
         result={isFinding ? '' : result}
         openScanner={() => {
           setShowScanner(true)
           setIsFinding(false)
-          setShowDrag(false)
+          setResult('')
         }}
       />
       <OperateBikeContext.Provider value={operateBike}>
@@ -262,12 +263,12 @@ const AddBikePaper = ({ show, onClose, pos, openScanner, result }: { show: boole
 
   useEffect(() => {
     if (entityStore.seriesList.length) setSeriesId(entityStore.seriesList[0].id)
-  }, [entityStore.seriesList])
+  }, [entityStore.seriesListVersion])
   
   useEffect(() => {
     if (show) {
       setSeriesNo(result)
-      setSeriesId(0)
+      if (entityStore.seriesList.length) setSeriesId(entityStore.seriesList[0].id)
     }
     else {
       setFocused(false)

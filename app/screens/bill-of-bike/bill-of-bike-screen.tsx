@@ -108,13 +108,13 @@ const AddBikeBillModal: FC<{ show: boolean, onClose: () => void }> = ({ show, on
 
   useEffect(() => {
     if (seriesList.length) setSeriesId(seriesList[0].id)
-  }, [seriesList.length])
+  }, [seriesList])
 
   useEffect(() => {
     if (show) {
       setAmount('')
       setExpense('')
-      setSeriesId(0)
+      if (seriesList.length) setSeriesId(seriesList[0].id)
     }
     else {
       setFocused(false)
