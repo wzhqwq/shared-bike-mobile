@@ -77,6 +77,8 @@ export const RideScreen: FC<StackScreenProps<NavigatorParamList, "ride">> = obse
       setCost(result[1])
       setRecordId(parseInt(result[2]))
       setStatus(LOCKED)
+      entityStore.listParkingPointsAround(bikeNow.coordinate)
+      entityStore.listBikesAround(bikeNow.coordinate)
     })
   }, [bikeNow])
 
@@ -95,6 +97,7 @@ export const RideScreen: FC<StackScreenProps<NavigatorParamList, "ride">> = obse
         setPosDrag(bikeNow.coordinate)
         posRef.current = bikeNow.coordinate
         setStatus(RIDING)
+        entityStore.listParkingPointsAround(bikeNow.coordinate)
       }
     })
   }, [bikeNow])
@@ -109,6 +112,13 @@ export const RideScreen: FC<StackScreenProps<NavigatorParamList, "ride">> = obse
       bikeNow.dummy.setPosition(posRef.current)
     }
   }, [posDrag])
+
+  useEffect(() => {
+    if (userStore.bikeNow) {
+      setBikeNow(userStore.bikeNow)
+      operateBike(userStore.bikeNow)
+    }
+  }, [userStore.bikeNow])
 
   useEffect(() => {
     if (bikeNow && status === RIDING) {

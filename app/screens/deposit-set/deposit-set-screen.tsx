@@ -52,20 +52,18 @@ export const DepositSetScreen: FC<StackScreenProps<NavigatorParamList, "depositS
 
 const renderItem = ({ item }: ListRenderItemInfo<DepositRecord>) => (
   <View style={LINE}>
-    <View style={INFO_LINE}>
-      <View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>变化量：</Text>
-          <Text>{item.change[0] !== '-' && '+'}{item.change} 元</Text>
-        </View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>类型：</Text>
-          <Text>{['充值', '骑行'][item.type]}</Text>
-        </View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>时间：</Text>
-          <Text>{moment(item.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
-        </View>
+    <View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>变化量：</Text>
+        <Text>{item.change[0] !== '-' && '+'}{item.change} 元</Text>
+      </View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>类型：</Text>
+        <Text>{['充值', '骑行'][item.type]}</Text>
+      </View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>时间：</Text>
+        <Text>{moment(item.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
       </View>
     </View>
   </View>

@@ -192,7 +192,7 @@ const MaintainerInfoGroup = observer(({ maintainer }: { maintainer: Maintainer }
         showMonthLabels
         getMonthLabel={(month) => ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'][month] + '月'}
         endDate={new Date()}
-        numDays={20}
+        numDays={80}
         style={HEATMAP}
       />
     </View>

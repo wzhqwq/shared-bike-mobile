@@ -75,7 +75,7 @@ interface AllRoutes {
   '/manager/bike/malfunction/modify': { malfunction_id: number, part_name: string }
   '/manager/souvenir/add': Souvenir
   '/manager/souvenir/modify': Souvenir
-  '/manager/souvenir/exchanges/list': { customer_id: number }
+  '/manager/souvenir/exchanges/list': { customer_id: number } & Paginator
   '/manager/souvenir/exchanges/give': { record_id: number }
   '/manager/section/add': Section
   '/manager/section/remove': { section_id: number }

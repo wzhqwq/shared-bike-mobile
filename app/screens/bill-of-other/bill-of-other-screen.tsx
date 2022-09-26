@@ -63,20 +63,18 @@ export const BillOfOtherScreen: FC<StackScreenProps<NavigatorParamList, "billOfO
 
 const renderItem = ({ item }: ListRenderItemInfo<OtherBill>) => (
   <View style={LINE}>
-    <View style={INFO_LINE}>
-      <View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>支出：</Text>
-          <Text>{item.expense} 元</Text>
-        </View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>开销原因：</Text>
-          <Text>{item.reason}</Text>
-        </View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>时间：</Text>
-          <Text>{moment(item.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
-        </View>
+    <View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>支出：</Text>
+        <Text>{item.expense} 元</Text>
+      </View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>开销原因：</Text>
+        <Text>{item.reason}</Text>
+      </View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>时间：</Text>
+        <Text>{moment(item.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
       </View>
     </View>
   </View>

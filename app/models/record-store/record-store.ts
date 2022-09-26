@@ -3,11 +3,10 @@ import { Response } from "../../services/api"
 import { BikeBill, BikeBillModel } from "../bike-bill/bike-bill"
 import { DepositRecord, DepositRecordModel } from "../deposit-record/deposit-record"
 import { DestroyRecord, DestroyRecordModel } from "../destroy-record/destroy-record"
-import { ExchangeRecord } from "../exchange-record/exchange-record"
+import { ExchangeRecord, ExchangeRecordModel } from "../exchange-record/exchange-record"
 import { withEnvironment } from "../extensions/with-environment"
 import { MalfunctionRecord, MalfunctionRecordModel } from "../malfunction-record/malfunction-record"
 import { ManagerBill, ManagerBillModel } from "../manager-bill/manager-bill"
-import { MixedExchangeRecord, MixedExchangeRecordModel } from "../mixed-exchange-record/mixed-exchange-record"
 import { OtherBill, OtherBillModel } from "../other-bill/other-bill"
 import { PointRecord, PointRecordModel } from "../point-record/point-record"
 import { RechargeRecord, RechargeRecordModel } from "../recharge-record/recharge-record"
@@ -15,7 +14,6 @@ import { RepairRecord, RepairRecordModel } from "../repair-record/repair-record"
 import { RideRecord, RideRecordModel } from "../ride-record/ride-record"
 import { SignUpRequest, SignUpRequestModel } from "../sign-up-request/sign-up-request"
 import { SouvenirBill, SouvenirBillModel } from "../souvenir-bill/souvenir-bill"
-import { Souvenir } from "../souvenir/souvenir"
 
 /**
  * Model description here for TypeScript hints.
@@ -41,7 +39,7 @@ export const RecordStoreModel = types
     rideRecords: types.optional(types.array(RideRecordModel), []),
     repairRecords: types.optional(types.array(RepairRecordModel), []),
     rechargeRecords: types.optional(types.array(RechargeRecordModel), []),
-    exchangeRecords: types.optional(types.array(MixedExchangeRecordModel), []),
+    exchangeRecords: types.optional(types.array(ExchangeRecordModel), []),
     destroyRecords: types.optional(types.array(DestroyRecordModel), []),
     bikeBills: types.optional(types.array(BikeBillModel), []),
     souvenirBills: types.optional(types.array(SouvenirBillModel), []),
@@ -75,7 +73,7 @@ export const RecordStoreModel = types
         self.rechargeRecords.replace(data)
       self.rechargeRecordsVersion++
     },
-    async setExchangeRecords(data: MixedExchangeRecord[], append: boolean) {
+    async setExchangeRecords(data: ExchangeRecord[], append: boolean) {
       if (append)
         self.exchangeRecords.push(...data)
       else
@@ -160,19 +158,14 @@ export const RecordStoreModel = types
       if (result.ok) self.setRechargeRecords(result.data, append)
     },
     async listMyExchangeRecords(append = true) {
-      const lastId = append ? self.exchangeRecords.at(-1)?.record.id ?? 100000 : 100000
-      const result: Response<[ExchangeRecord, Souvenir][]> = await self.environment.api.get('/customer/souvenir/exchanged/list', { lastId })
-      if (result.ok) self.setExchangeRecords(
-        result.data.map(([r, s]) => MixedExchangeRecordModel.create({ record: r, souvenir: s })),
-        append,
-      )
+      const lastId = append ? self.exchangeRecords.at(-1)?.id ?? 100000 : 100000
+      const result: Response<ExchangeRecord[]> = await self.environment.api.get('/customer/souvenir/exchanged/list', { lastId })
+      if (result.ok) self.setExchangeRecords(result.data, append)
     },
-    async listUserExchangeRecords(customerId: number) {
-      const result: Response<[ExchangeRecord, Souvenir][]> = await self.environment.api.get('/manager/souvenir/exchanges/list', { customer_id: customerId })
-      if (result.ok) self.setExchangeRecords(
-        result.data.map(([r, s]) => MixedExchangeRecordModel.create({ record: r, souvenir: s })),
-        false,
-      )
+    async listUserExchangeRecords(customerId: number, append = true) {
+      const lastId = append ? self.exchangeRecords.at(-1)?.id ?? 100000 : 100000
+      const result: Response<ExchangeRecord[]> = await self.environment.api.get('/manager/souvenir/exchanges/list', { customer_id: customerId, lastId })
+      if (result.ok) self.setExchangeRecords(result.data, append)
     },
     async listDestroyRecords(append = true) {
       const lastId = append ? self.destroyRecords.at(-1)?.id ?? 100000 : 100000

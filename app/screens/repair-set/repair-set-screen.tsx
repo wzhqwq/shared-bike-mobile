@@ -67,16 +67,14 @@ const LINE: ViewStyle = {
 
 const renderItem = ({ item }: ListRenderItemInfo<RepairRecord>) => (
   <View style={LINE}>
-    <View style={INFO_LINE}>
-      <View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>维修结论：</Text>
-          <Text>{['维修失败', '忽略故障', '维修成功'][item.conclusion]}</Text>
-        </View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>处理时间：</Text>
-          <Text>{moment(item.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
-        </View>
+    <View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>维修结论：</Text>
+        <Text>{['维修失败', '忽略故障', '维修成功'][item.conclusion]}</Text>
+      </View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>处理时间：</Text>
+        <Text>{moment(item.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
       </View>
     </View>
   </View>

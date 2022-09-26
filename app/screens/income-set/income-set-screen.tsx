@@ -1,36 +1,68 @@
-import React, { FC } from "react"
+import React, { FC, useCallback, useEffect, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { ViewStyle } from "react-native"
+import { FlatList, ListRenderItemInfo, View, ViewStyle } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack"
-import { NavigatorParamList } from "../../navigators"
-import { Screen, Text } from "../../components"
+import { goBack, NavigatorParamList } from "../../navigators"
+import { Header, Screen, Text } from "../../components"
 // import { useNavigation } from "@react-navigation/native"
 // import { useStores } from "../../models"
 import { color } from "../../theme"
+import moment from "moment"
+import { NO_DATA, LINE, INFO_LINE } from "../../global"
+import { useStores, RideRecord } from "../../models"
 
 const ROOT: ViewStyle = {
   backgroundColor: color.background,
   flex: 1,
 }
 
-// STOP! READ ME FIRST!
-// To fix the TS error below, you'll need to add the following things in your navigation config:
-// - Add `incomeSet: undefined` to NavigatorParamList
-// - Import your screen, and add it to the stack:
-//     `<Stack.Screen name="incomeSet" component={IncomeSetScreen} />`
-// Hint: Look for the 🔥!
-
-// REMOVE ME! ⬇️ This TS ignore will not be necessary after you've added the correct navigator param type
-// @ts-ignore
 export const IncomeSetScreen: FC<StackScreenProps<NavigatorParamList, "incomeSet">> = observer(function IncomeSetScreen() {
-  // Pull in one of our MST stores
-  // const { someStore, anotherStore } = useStores()
+  const { recordStore } = useStores()
+  const [refreshing, setRefreshing] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const version = recordStore.rideRecordsVersion
+  
+  useEffect(() => {
+    if (!recordStore.rideRecords.length) refresh()
+  }, [])
 
-  // Pull in navigation via hook
-  // const navigation = useNavigation()
+  const refresh = useCallback(() => {
+    recordStore.listMyRideRecords(false).then(() => setRefreshing(false))
+  }, [])
+
+  const next = useCallback(() => {
+    recordStore.listMyRideRecords(true)
+  }, [])
+
   return (
-    <Screen style={ROOT} preset="scroll">
-      <Text preset="header" text="incomeSet" />
+    <Screen style={ROOT}>
+      <Header headerText="骑行记录" hasBack onLeftPress={goBack} />
+      <FlatList
+        onEndReached={next}
+        data={recordStore.rideRecords}
+        renderItem={renderItem}
+        keyExtractor={item => item.id.toString()}
+        onRefresh={refresh}
+        refreshing={refreshing}
+        ListEmptyComponent={(
+          <Text style={NO_DATA}>没有骑行记录</Text>
+        )}  
+      />
     </Screen>
   )
 })
+
+const renderItem = ({ item }: ListRenderItemInfo<RideRecord>) => (
+  <View style={LINE}>
+    <View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>消费：</Text>
+        <Text>{item.charge} 元</Text>
+      </View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>结束骑行时间：</Text>
+        <Text>{moment(item.end_time).format('YYYY-MM-DD HH:mm:ss')}</Text>
+      </View>
+    </View>
+  </View>
+)

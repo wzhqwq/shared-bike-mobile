@@ -53,7 +53,7 @@ const BUTTON_GROUP: ViewStyle = {
   paddingVertical: spacing[1],
   borderRadius: spacing[2],
   marginTop: -spacing[6],
-  marginLeft: -8,
+  marginLeft: -4,
   shadowColor: '#000',
   shadowOffset: { width: 2, height: 2 },
   shadowOpacity: 0.1,
@@ -135,12 +135,10 @@ export const PropertyScreen: FC<StackScreenProps<NavigatorParamList, "property">
                 <Text preset='header' text={statistic.expenditure + ' 元'} />
               </View>
               <View style={INFO_GROUP_DIVIDER} />
-              <TouchableHighlight activeOpacity={0.9} underlayColor='#FFF5' onPress={() => navigate('incomeSet')} style={INFO_GROUP_HIGHLIGHT}>
-                <View style={INFO_GROUP_ITEM}>
-                  <Text preset='fieldLabel' text='本月收入' />
-                  <Text preset='header' text={statistic.income + ' 元'} />
-                </View>
-              </TouchableHighlight>
+              <View style={INFO_GROUP_ITEM}>
+                <Text preset='fieldLabel' text='本月收入' />
+                <Text preset='header' text={statistic.income + ' 元'} />
+              </View>
               <View style={INFO_GROUP_DIVIDER} />
               <TouchableHighlight activeOpacity={0.9} underlayColor='#FFF5' onPress={() => navigate('billTotal')} style={INFO_GROUP_HIGHLIGHT}>
                 <View style={INFO_GROUP_ITEM}>

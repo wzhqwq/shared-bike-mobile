@@ -67,20 +67,18 @@ const LINE: ViewStyle = {
 
 const renderItem = ({ item }: ListRenderItemInfo<PointRecord>) => (
   <View style={LINE}>
-    <View style={INFO_LINE}>
-      <View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>变化量：</Text>
-          <Text>{item.change > 0 && '+'}{item.change}</Text>
-        </View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>类型：</Text>
-          <Text>{['上报故障奖励', '兑换商品', '违规惩罚'][item.type]}</Text>
-        </View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>时间：</Text>
-          <Text>{moment(item.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
-        </View>
+    <View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>变化量：</Text>
+        <Text>{item.change > 0 && '+'}{item.change}</Text>
+      </View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>类型：</Text>
+        <Text>{['上报故障奖励', '兑换商品', '违规惩罚'][item.type]}</Text>
+      </View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>时间：</Text>
+        <Text>{moment(item.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
       </View>
     </View>
   </View>

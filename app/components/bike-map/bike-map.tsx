@@ -89,10 +89,10 @@ export const BikeMap = observer(function BikeMap(props: BikeMapProps) {
       switch (props.mode) {
         case 'customer':
           if (props.showBikes) {
-            await entityStore.listBikesAround(region.longitude.toFixed(6), region.latitude.toFixed(6))
+            await entityStore.listBikesAround(region)
           }
           if (props.showParkingPoints) {
-            await entityStore.listParkingPointsAround(region.longitude.toFixed(6), region.latitude.toFixed(6))
+            await entityStore.listParkingPointsAround(region)
           }
           break
         case 'maintainer':
@@ -123,15 +123,15 @@ export const BikeMap = observer(function BikeMap(props: BikeMapProps) {
   }, [region])
 
   useEffect(() => {
-    setRefreshing(true);
-    (async () => {
+    setRefreshing(true)
+    ;(async () => {
       switch (props.mode) {
         case 'customer':
           if (props.showBikes) {
-            await entityStore.listBikesAround(region.longitude.toFixed(6), region.latitude.toFixed(6))
+            await entityStore.listBikesAround(region)
           }
           if (props.showParkingPoints) {
-            await entityStore.listParkingPointsAround(region.longitude.toFixed(6), region.latitude.toFixed(6))
+            await entityStore.listParkingPointsAround(region)
           }
           break
         case 'maintainer':

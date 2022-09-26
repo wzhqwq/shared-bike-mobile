@@ -12,7 +12,6 @@ export const SouvenirBillModel = types
     manager_id: types.maybe(types.number),
     souvenir_id: types.number,
     amount: types.number,
-
   })
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars

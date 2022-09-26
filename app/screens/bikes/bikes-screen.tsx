@@ -98,10 +98,10 @@ const STATUS_AVAILABLE: ViewStyle = {
 }
 
 const STATUS_OCCUPIED: ViewStyle = {
-  width: 6,
-  height: 6,
+  width: 10,
+  height: 10,
   borderWidth: 2,
-  borderRadius: 3,
+  borderRadius: 5,
   borderColor: color.primary,
   marginRight: spacing[1],
 }

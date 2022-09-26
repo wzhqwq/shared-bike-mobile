@@ -149,7 +149,7 @@ export const UserStoreModel = types
       if (!bikeResult.ok) return false
       const billResult: Response<any> = await self.environment.api.get('/manager/property/master/statistics')
       if (!billResult.ok) return false
-      self.setStatistics({ ...bikeResult.data, ...billResult.data })
+      self.setStatistics(StatisticModel.create({ ...bikeResult.data, ...billResult.data }))
       return true
     },
     async getRepairGraph() {

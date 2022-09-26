@@ -121,8 +121,8 @@ export const EntityStoreModel = types
         }
       }
     },
-    async listBikesAround(longitude: string, latitude: string) {
-      const result: Response<Bike[]> = await self.environment.api.get('/customer/bike/list', { longitude, latitude })
+    async listBikesAround(pos: LatLng) {
+      const result: Response<Bike[]> = await self.environment.api.get('/customer/bike/list', { longitude: pos.longitude.toFixed(6), latitude: pos.latitude.toFixed(6) })
       if (result.ok) self.setBikes(result.data)
     },
     async fetchConfig() {
@@ -149,8 +149,8 @@ export const EntityStoreModel = types
       const result: Response<ParkingPoint[]> = await self.environment.api.get('/maintainer/list_parking_points', { section_id: self.sectionIdNow })
       if (result.ok) self.setParkingPoints(result.data)
     },
-    async listParkingPointsAround(longitude: string, latitude: string) {
-      const result: Response<ParkingPoint[]> = await self.environment.api.get('/customer/bike/parking_point/list', { longitude, latitude })
+    async listParkingPointsAround(pos: LatLng) {
+      const result: Response<ParkingPoint[]> = await self.environment.api.get('/customer/bike/parking_point/list', { longitude: pos.longitude.toFixed(6), latitude: pos.latitude.toFixed(6) })
       if (result.ok) self.setParkingPoints(result.data)
     },
     async listUsers(category: 'customer' | 'maintainer' | 'manager', append: boolean) {

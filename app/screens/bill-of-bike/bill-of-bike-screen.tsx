@@ -68,28 +68,26 @@ export const BillOfBikeScreen: FC<StackScreenProps<NavigatorParamList, "billOfBi
 
 const renderItem = ({ item }: ListRenderItemInfo<BikeBill>) => (
   <View style={LINE}>
-    <View style={INFO_LINE}>
-      <View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>购买量：</Text>
-          <Text>{item.amount}</Text>
-        </View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>支出：</Text>
-          <Text>{item.expense} 元</Text>
-        </View>
-        <Context.Consumer>
-          {seriesList => (
-            <View style={INFO_LINE}>
-              <Text preset='fieldLabel'>单车型号：</Text>
-              <Text>{seriesList.find(series => series.id === item.series_id)?.name}</Text>
-            </View>
-          )}
-        </Context.Consumer>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>时间：</Text>
-          <Text>{moment(item.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
-        </View>
+    <View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>购买量：</Text>
+        <Text>{item.amount}</Text>
+      </View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>支出：</Text>
+        <Text>{item.expense} 元</Text>
+      </View>
+      <Context.Consumer>
+        {seriesList => (
+          <View style={INFO_LINE}>
+            <Text preset='fieldLabel'>单车型号：</Text>
+            <Text>{seriesList.find(series => series.id === item.series_id)?.name}</Text>
+          </View>
+        )}
+      </Context.Consumer>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>时间：</Text>
+        <Text>{moment(item.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
       </View>
     </View>
   </View>

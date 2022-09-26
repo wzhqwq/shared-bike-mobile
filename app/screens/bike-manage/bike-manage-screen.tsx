@@ -45,12 +45,13 @@ export const BikeManageScreen: FC<StackScreenProps<NavigatorParamList, "bikeMana
   }, [])
 
   const updatePP = useCallback((pp: ParkingPoint) => {
+    console.log('updatePP', pp)
     if (!showPP) return
     setPPNow(pp)
     if (pp)
       pp.setSelected(true)
     else
-    setShowPP(false)
+      setShowPP(false)
   }, [showPP])
 
   const operateBike = useCallback((bike: Bike) => {
@@ -70,7 +71,7 @@ export const BikeManageScreen: FC<StackScreenProps<NavigatorParamList, "bikeMana
   }, [showOperateBike])
 
   const addBike = useCallback(() => {
-    setPosDrag(posNow)
+    setPosDrag({ latitude: posNow.latitude + posNow.latitudeDelta / 3, longitude: posNow.longitude })
     setShowDrag(true)
     setShowAddBike(true)
   }, [posNow])
@@ -96,7 +97,7 @@ export const BikeManageScreen: FC<StackScreenProps<NavigatorParamList, "bikeMana
 
   useEffect(() => {
     if (showOperateBike && bikeNow?.status === BIKE_UNAVAILABLE) {
-      setPosDrag(posNow)
+      setPosDrag({ latitude: posNow.latitude + posNow.latitudeDelta / 3, longitude: posNow.longitude })
       setShowDrag(true)
     }
   }, [bikeNow, showOperateBike])
@@ -126,7 +127,10 @@ export const BikeManageScreen: FC<StackScreenProps<NavigatorParamList, "bikeMana
       >
         {showDrag && (<DragBike pos={posDrag} setPos={setPosDrag} />)}
       </BikeMap>
-      <PPModal show={showPP} onClose={() => setShowPP(false)} pp={ppNow} />
+      <PPModal show={showPP} onClose={() => {
+        setShowPP(false)
+        ppNow.setSelected(false)
+      }} pp={ppNow} />
       <AddBikePaper
         show={showAddBike}
         onClose={() => {
@@ -235,10 +239,7 @@ const INPUT: ViewStyle = {
 }
 
 const PPModal = ({ show, onClose, pp }: { show: boolean, onClose: () => void, pp: ParkingPoint }) => (
-  <BottomModal onClose={() => {
-    onClose()
-    pp.setSelected(false)
-  }} show={show} title='停车点'>
+  <BottomModal onClose={onClose} show={show} title='停车点'>
     {pp && (
       <>
         <View style={INFO_LINE}><Text preset='fieldLabel'>坐标：</Text><Text>{global.positionHuman(pp.coordinate)}</Text></View>
@@ -317,6 +318,8 @@ const OperateBikePaper = observer(({ show, onClose, bike, pos }: { show: boolean
     bike.startMaintaining().then(() => {
       onClose()
       bike.setSelected(false)
+      entityStore.listBikesInSection()
+      entityStore.listParkingPointsInSection()
     })
   }, [bike])
 
@@ -324,6 +327,8 @@ const OperateBikePaper = observer(({ show, onClose, bike, pos }: { show: boolean
     bike.finishMaintaining(pos).then(() => {
       onClose()
       bike.setSelected(false)
+      entityStore.listBikesInSection()
+      entityStore.listParkingPointsInSection()
     })
   }, [bike, pos])
 

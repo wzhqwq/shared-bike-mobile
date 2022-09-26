@@ -8,8 +8,8 @@ import { SouvenirModel } from "../souvenir/souvenir"
 export const MixedExchangeRecordModel = types
   .model("MixedExchangeRecord")
   .props({
-    record: ExchangeRecordModel,
-    souvenir: SouvenirModel,
+    record: types.map(ExchangeRecordModel),
+    souvenir: types.map(SouvenirModel),
   })
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars

@@ -68,28 +68,26 @@ export const BillOfSouvenirScreen: FC<StackScreenProps<NavigatorParamList, "bill
 
 const renderItem = ({ item }: ListRenderItemInfo<SouvenirBill>) => (
   <View style={LINE}>
-    <View style={INFO_LINE}>
-      <View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>购买量：</Text>
-          <Text>{item.amount}</Text>
-        </View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>支出：</Text>
-          <Text>{item.expense} 元</Text>
-        </View>
-        <Context.Consumer>
-          {souvenir => (
-            <View style={INFO_LINE}>
-              <Text preset='fieldLabel'>单车型号：</Text>
-              <Text>{souvenir.find(series => series.id === item.souvenir_id)?.name}</Text>
-            </View>
-          )}
-        </Context.Consumer>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>时间：</Text>
-          <Text>{moment(item.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
-        </View>
+    <View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>购买量：</Text>
+        <Text>{item.amount}</Text>
+      </View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>支出：</Text>
+        <Text>{item.expense} 元</Text>
+      </View>
+      <Context.Consumer>
+        {souvenir => (
+          <View style={INFO_LINE}>
+            <Text preset='fieldLabel'>纪念品名称：</Text>
+            <Text>{souvenir.find(series => series.id === item.souvenir_id)?.name}</Text>
+          </View>
+        )}
+      </Context.Consumer>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>时间：</Text>
+        <Text>{moment(item.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
       </View>
     </View>
   </View>

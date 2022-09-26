@@ -7,7 +7,7 @@ import { BottomModal, Button, Header, Screen, Text, TextField } from "../../comp
 import { color, spacing } from "../../theme"
 import MapView, { Marker } from "react-native-maps"
 import { useRoute, RouteProp } from "@react-navigation/native"
-import { Bike, useStores } from "../../models"
+import { Bike, BIKE_DESTROYED, useStores } from "../../models"
 import { MaterialIcons } from "@expo/vector-icons"
 import global, { INFO_LINE } from "../../global"
 import { statusComponents } from "../bikes/bikes-screen"
@@ -79,7 +79,7 @@ export const BikeDetailScreen: FC<StackScreenProps<NavigatorParamList, "bikeDeta
             <BikeInMap bike={bike} />
           </MapView>
           <SafeAreaView edges={['bottom']}>
-            <Button style={BOTTOM} text='注销单车' onPress={() => setShow(true)} />
+            <Button style={BOTTOM} text='注销单车' onPress={() => setShow(true)} disabled={bike.status === BIKE_DESTROYED} />
           </SafeAreaView>
         </View>
       )}

@@ -59,16 +59,14 @@ export const RechargeSetScreen: FC<StackScreenProps<NavigatorParamList, "recharg
 
 const renderItem = ({ item }: ListRenderItemInfo<RechargeRecord>) => (
   <View style={LINE}>
-    <View style={INFO_LINE}>
-      <View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>充值金额：</Text>
-          <Text>{(item.amount)} 元</Text>
-        </View>
-        <View style={INFO_LINE}>
-          <Text preset='fieldLabel'>充值时间：</Text>
-          <Text>{moment(item.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
-        </View>
+    <View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>充值金额：</Text>
+        <Text>{(item.amount)} 元</Text>
+      </View>
+      <View style={INFO_LINE}>
+        <Text preset='fieldLabel'>充值时间：</Text>
+        <Text>{moment(item.time).format('YYYY-MM-DD HH:mm:ss')}</Text>
       </View>
     </View>
   </View>
